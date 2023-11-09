@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.ballandbeam.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\s2ajami\\OneDrive - University of Waterloo\\BallAndBeam-project\\BallAndBeam\\BallAndBeam\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "BallAndBeam [Testing]"
+        }
+      }
+    }
+  ]
+}
