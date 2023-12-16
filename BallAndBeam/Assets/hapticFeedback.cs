@@ -32,6 +32,7 @@ public class hapticFeedback : MonoBehaviour
     public SteamVR_Action_Vibration hapticAction;
     public SteamVR_Action_Single squeezeAction;
 
+    public bool hapticsEnabled = false;
     public bool rightHandIsHoldingBeam = false;
     public bool leftHandIsHoldingBeam = false;
     public bool handsFound = false;
@@ -130,7 +131,7 @@ public class hapticFeedback : MonoBehaviour
             // 3. draw a vector connecting the two hands' y positions
             Vector2 handVector = new Vector2(rightHandModel.transform.position.x - leftHandModel.transform.position.x, rightHandModel.transform.position.y - leftHandModel.transform.position.y);
             transform.eulerAngles = new Vector3(0, 0, Mathf.Rad2Deg * Mathf.Atan(handVector.y / handVector.x));
-            //RenderHaptics();
+            if (hapticsEnabled) RenderHaptics();
         }
     }
 

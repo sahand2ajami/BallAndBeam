@@ -8,6 +8,9 @@ public class Balance : MonoBehaviour
     public GameObject plane;
     public GameObject beam;
     public GameObject target;
+    public GameObject occluder;
+
+    public float occluderSpan = 0.015f;
 
     public int fail = 0;
     public int success = 0;
@@ -15,6 +18,7 @@ public class Balance : MonoBehaviour
     public int totalFail = 0;
     public int totalSuccess = 0;
 
+    public bool occlusionEnabled = false;
     public bool targetTimerStarted = false;
     public float startTime = 0f;
     public float timeThreshold = 1f;
@@ -26,6 +30,8 @@ public class Balance : MonoBehaviour
     {
         // when the scene begins, make sure that the ball is on the beam 
         ResetToBeam();
+        // apply the occluder size hyperparameter (only affects the x span)
+        occluder.transform.localScale = new Vector3(occluderSpan, 1.0f, 2.74f);
     }
 
     void Update()
@@ -38,8 +44,8 @@ public class Balance : MonoBehaviour
         if (Vector3.Distance(transform.position, target.transform.position) <= 0.021f && targetTimerStarted && TimeThresholdMet())
         {
             success += 1;
-            RespawnTarget();
             ResetToBeam();
+            RespawnTarget();
             experiment.GetComponent<ExperimentPipeline>().trialState = ExperimentPipeline.TrialState.TrialEnd;
         }
         if (Vector3.Distance(transform.position, target.transform.position) > 0.021f && targetTimerStarted)
@@ -79,6 +85,19 @@ public class Balance : MonoBehaviour
         float xPosition = Random.Range(-0.48f, 0.48f);
         target.transform.localPosition = new Vector3(xPosition, target.transform.localPosition.y, target.transform.localPosition.z);
         //target.transform.localEulerAngles = beam.transform.localEulerAngles;
+        if (occlusionEnabled)
+        {
+            float newOccluderXPosition;
+            if (xPosition > transform.position.x)
+            {
+                newOccluderXPosition = Random.Range(transform.position.x, xPosition);
+            }
+            else
+            {
+                newOccluderXPosition = Random.Range(xPosition, transform.position.x);
+            }
+            occluder.transform.position = new Vector3(newOccluderXPosition, beam.transform.position.y, occluder.transform.position.z);
+        }
     }
 
     void OnCollisionEnter(Collision collision)

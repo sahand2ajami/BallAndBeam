@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class ExperimentPipeline : MonoBehaviour
+public class ExperimentPipelineDynamic : MonoBehaviour
 {
     // objects that need to be kept track of in the experiment
     public GameObject beam;
@@ -17,7 +17,7 @@ public class ExperimentPipeline : MonoBehaviour
 
     // misc variables for state tracking
     public float startTime = 0f;
-    public enum ExperimentState 
+    public enum ExperimentStateDynamic 
     {
         NotStarted,
         StartingPhase,
@@ -25,14 +25,14 @@ public class ExperimentPipeline : MonoBehaviour
         PhaseBreak,
         End
     }
-    public ExperimentState state;
-    public enum TrialState
+    public ExperimentStateDynamic state;
+    public enum TrialStateDynamic
     {
         TrialStart,
         TrialRunning,
         TrialEnd
     }
-    public TrialState trialState;
+    public TrialStateDynamic trialState;
     public hapticFeedback hapticFeedback;
     public int phase = 0;
     public int trialsPerPhase = 10;
@@ -41,8 +41,8 @@ public class ExperimentPipeline : MonoBehaviour
     void Start()
     {
         tmp.text = "Move your hands under the beam, pick it up, and press both triggers simultaneously to begin";
-        state = ExperimentState.NotStarted;
-        trialState = TrialState.TrialStart;
+        state = ExperimentStateDynamic.NotStarted;
+        trialState = TrialStateDynamic.TrialStart;
         ball.GetComponent<Rigidbody>().isKinematic = true;
     }
 
@@ -52,19 +52,19 @@ public class ExperimentPipeline : MonoBehaviour
         // check if the triggers have been pressed and the beam has been picked up
         switch(state)
         {
-            case ExperimentState.NotStarted: 
+            case ExperimentStateDynamic.NotStarted: 
                 NotStarted();
                 break;
-            case ExperimentState.StartingPhase:
+            case ExperimentStateDynamic.StartingPhase:
                 StartingPhase();
                 break;
-            case ExperimentState.RunningPhase:
+            case ExperimentStateDynamic.RunningPhase:
                 RunningPhase();
                 break;
-            case ExperimentState.PhaseBreak:
+            case ExperimentStateDynamic.PhaseBreak:
                 PhaseBreak();
                 break;
-            case ExperimentState.End:
+            case ExperimentStateDynamic.End:
                 End();
                 break;
             default: break;
@@ -76,7 +76,7 @@ public class ExperimentPipeline : MonoBehaviour
     {
         if (beam.GetComponent<hapticFeedback>().leftHandIsHoldingBeam && beam.GetComponent<hapticFeedback>().rightHandIsHoldingBeam) 
         {
-            state = ExperimentState.StartingPhase;
+            state = ExperimentStateDynamic.StartingPhase;
             phase = 1;
             startTime = Time.time;
         }
@@ -97,28 +97,30 @@ public class ExperimentPipeline : MonoBehaviour
         }
         if (remainingTime <= 0.0f) 
         {
-            state = ExperimentState.RunningPhase;
+            state = ExperimentStateDynamic.RunningPhase;
+            trialState = TrialStateDynamic.TrialRunning;
             ball.GetComponent<Rigidbody>().isKinematic = false;
+            ball.GetComponent<BalanceDynamic>().targetMovementStartTime = Time.time;
         }
     }
 
     void RunningPhase()
     {
         // display the current score
-        int fail = ball.GetComponent<Balance>().fail;
-        int score = ball.GetComponent<Balance>().success;
+        int fail = ball.GetComponent<BalanceDynamic>().fail;
+        int score = ball.GetComponent<BalanceDynamic>().success;
         int remaining = trialsPerPhase - fail - score;
         tmp.text = "Fail: " + fail + " | " + "Score: " + score + " | " + "Remaining: " + remaining;
         
         // check if between trials
         switch (trialState)
         {
-            case TrialState.TrialStart: 
+            case TrialStateDynamic.TrialStart: 
                 TrialStarting();
                 break;
-            case TrialState.TrialRunning:
+            case TrialStateDynamic.TrialRunning:
                 break;
-            case TrialState.TrialEnd:
+            case TrialStateDynamic.TrialEnd:
                 TrialEnd();
                 break;
             default: break;
@@ -127,13 +129,13 @@ public class ExperimentPipeline : MonoBehaviour
         // stuff related to end of phase
         if (remaining == 0 && phase != 3)
         {
-            state = ExperimentState.PhaseBreak;
+            state = ExperimentStateDynamic.PhaseBreak;
             startTime = Time.time;
-            ball.GetComponent<Balance>().ClearSuccessAndFail();
+            ball.GetComponent<BalanceDynamic>().ClearSuccessAndFail();
         } 
         else if (remaining == 0 && phase == 3)
         {
-            state = ExperimentState.End;
+            state = ExperimentStateDynamic.End;
         }
     }
 
@@ -147,7 +149,7 @@ public class ExperimentPipeline : MonoBehaviour
         if (remainingTime <= 0.0f)
         {
             phase += 1;
-            state = ExperimentState.StartingPhase;
+            state = ExperimentStateDynamic.StartingPhase;
         }
     }
 
@@ -165,8 +167,9 @@ public class ExperimentPipeline : MonoBehaviour
         tmp.text = "Next trial in " + remainingTime.ToString("n2") + "s";
         if (remainingTime <= 0.0f) 
         {
-            trialState = TrialState.TrialRunning;
+            trialState = TrialStateDynamic.TrialRunning;
             ball.GetComponent<Rigidbody>().isKinematic = false;
+            ball.GetComponent<BalanceDynamic>().targetMovementStartTime = Time.time;
         }
     }
 
@@ -174,7 +177,7 @@ public class ExperimentPipeline : MonoBehaviour
     {
         // freeze ball and switch states
         ball.GetComponent<Rigidbody>().isKinematic = true;
-        trialState = TrialState.TrialStart;
+        trialState = TrialStateDynamic.TrialStart;
         // start timer
         startTime = Time.time;
     }
