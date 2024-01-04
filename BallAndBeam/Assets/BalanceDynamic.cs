@@ -51,7 +51,7 @@ public class BalanceDynamic : MonoBehaviour
 
     void Update()
     {
-        if (experiment.GetComponent<ExperimentPipelineDynamic>().state == ExperimentPipelineDynamic.ExperimentStateDynamic.RunningPhase)
+        if (experiment.GetComponent<ExperimentPipelineDynamic>().trialState == ExperimentPipelineDynamic.TrialStateDynamic.TrialRunning)
             {
             // detect if the ball is on the target
             if (Vector3.Distance(transform.position, target.transform.position) <= 0.021f && !targetTimerStarted)
@@ -63,10 +63,13 @@ public class BalanceDynamic : MonoBehaviour
                 // we want continuous holding
                 PauseTimer();
             }
+            
+            // if (EndOfTrialCheck())
             if (TimeThresholdMet())
             {
                 Debug.Log("Entered success and threshold met.");
                 success += 1;
+
                 PauseTimer();
                 ResetTimer();
                 ResetToBeam();
@@ -116,7 +119,7 @@ public class BalanceDynamic : MonoBehaviour
     void RespawnTarget()
     {
         //float xPosition = Random.Range(-0.48f, 0.48f);
-        float xPosition = Random.Range(-0.01f, 0.01f);
+        float xPosition = 0f;
         target.transform.localPosition = new Vector3(xPosition, target.transform.localPosition.y, target.transform.localPosition.z);
         //target.transform.localEulerAngles = beam.transform.localEulerAngles;
         if (occlusionEnabled)

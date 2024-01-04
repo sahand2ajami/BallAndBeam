@@ -10,6 +10,10 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public GameObject ball;
     public TextMeshPro tmp;
 
+    public Logger logger;
+
+    public GameObject left_hand;
+    public GameObject right_hand;
     // time duration constants for commencing experiment
     public float initialWait = 5.0f;
     public float interPhaseWait = 30.0f;
@@ -36,6 +40,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public hapticFeedback hapticFeedback;
     public int phase = 0;
     public int trialsPerPhase = 10;
+
 
     // Start is called before the first frame update
     void Start()
@@ -119,9 +124,10 @@ public class ExperimentPipelineDynamic : MonoBehaviour
                 TrialStarting();
                 break;
             case TrialStateDynamic.TrialRunning:
+                TrialRunning(trialsPerPhase - remaining + 1);
                 break;
             case TrialStateDynamic.TrialEnd:
-                TrialEnd();
+                TrialEnd(trialsPerPhase - remaining);
                 break;
             default: break;
         }
@@ -150,6 +156,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         {
             phase += 1;
             state = ExperimentStateDynamic.StartingPhase;
+
         }
     }
 
@@ -173,12 +180,30 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         }
     }
 
-    void TrialEnd()
+    void TrialRunning(int trialNumber)
+    {   
+        logger.WriteCSV("scores", 
+            ball.GetComponent<BalanceDynamic>().success,
+            ball.GetComponent<BalanceDynamic>().totalSuccess,
+            ball.GetComponent<BalanceDynamic>().fail, 
+            ball.GetComponent<BalanceDynamic>().totalFail,
+            trialNumber, phase);
+        logger.WriteCSVPositions("ball", ball.transform.position, trialNumber, phase);
+        logger.WriteCSVPositions("target", ball.GetComponent<BalanceDynamic>().target.transform.position, trialNumber, phase);
+        logger.WriteCSVPositions("occluder", ball.GetComponent<BalanceDynamic>().occluder.transform.position, trialNumber, phase);
+        logger.WriteCSVPositions("left_hand", left_hand.transform.position, trialNumber, phase);
+        logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);
+
+    }
+
+    void TrialEnd(int trialNumber)
     {
         // freeze ball and switch states
         ball.GetComponent<Rigidbody>().isKinematic = true;
         trialState = TrialStateDynamic.TrialStart;
         // start timer
         startTime = Time.time;
+        logger.WriteCSVList("trackingTimes", ball.GetComponent<BalanceDynamic>().trackingTimeList[^1], trialNumber, phase);
+
     }
 }
