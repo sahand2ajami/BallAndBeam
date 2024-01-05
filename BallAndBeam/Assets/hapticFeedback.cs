@@ -39,6 +39,7 @@ public class hapticFeedback : MonoBehaviour
     public bool tableIsActive = true;
 
     // variables for position/rotation tracking once beam is held up
+    public float sholderWidth = 0.46f; // * const
     public float leftHandYBaseline = 0f;
     public float rightHandYBaseline = 0f;
 
@@ -53,14 +54,17 @@ public class hapticFeedback : MonoBehaviour
         if (triggerValueL > 0.0f)
         {
             leftHandIsHoldingBeam = true;
-            staticLeftHandFollower.transform.position = new Vector3(staticLeftHandModel.transform.position.x, staticLeftHandFollower.transform.position.y, staticLeftHandFollower.transform.position.z);
+            staticLeftHandFollower.transform.position = new Vector3(-sholderWidth/2, staticLeftHandFollower.transform.position.y, staticLeftHandFollower.transform.position.z);
             leftHandYBaseline = leftHandModel.transform.position.y;
+            // Debug.Log("left" + staticLeftHandFollower.transform.rotation);
+
         }
         if (triggerValueR > 0.0f)
         {
             rightHandIsHoldingBeam = true;
-            staticRightHandFollower.transform.position = new Vector3(staticRightHandModel.transform.position.x, staticRightHandFollower.transform.position.y, staticRightHandFollower.transform.position.z);
+            staticRightHandFollower.transform.position = new Vector3(sholderWidth/2, staticRightHandFollower.transform.position.y, staticRightHandFollower.transform.position.z);
             rightHandYBaseline = rightHandModel.transform.position.y;
+
         }        
     }
 
@@ -70,6 +74,7 @@ public class hapticFeedback : MonoBehaviour
         // render static hands
         staticLeftHandModel.transform.position = leftHandModel.transform.position;
         staticLeftHandModel.transform.rotation = leftHandModel.transform.rotation;
+        Debug.Log("right" + staticLeftHandModel.transform.rotation);
 
         staticRightHandModel.transform.position = rightHandModel.transform.position;
         staticRightHandModel.transform.rotation = rightHandModel.transform.rotation;
@@ -127,7 +132,9 @@ public class hapticFeedback : MonoBehaviour
             rightHandModel.GetComponent<HandCollider>().enabled = false;
             // 2. move the static hands to the position of the followers
             staticLeftHandModel.transform.position = new Vector3(staticLeftHandFollower.transform.position.x, staticLeftHandFollower.transform.position.y - yShift, staticLeftHandFollower.transform.position.z - zShift);
+            staticLeftHandModel.transform.rotation = staticLeftHandFollower.transform.rotation;
             staticRightHandModel.transform.position = new Vector3(staticRightHandFollower.transform.position.x, staticRightHandFollower.transform.position.y - yShift, staticRightHandFollower.transform.position.z - zShift);
+            staticRightHandModel.transform.rotation = staticRightHandFollower.transform.rotation;
             // 3. draw a vector connecting the two hands' y positions
             Vector2 handVector = new Vector2(rightHandModel.transform.position.x - leftHandModel.transform.position.x, rightHandModel.transform.position.y - leftHandModel.transform.position.y);
             transform.eulerAngles = new Vector3(0, 0, Mathf.Rad2Deg * Mathf.Atan(handVector.y / handVector.x));

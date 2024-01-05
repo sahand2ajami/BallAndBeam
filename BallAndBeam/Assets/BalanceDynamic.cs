@@ -36,7 +36,8 @@ public class BalanceDynamic : MonoBehaviour
     {
         // when the scene begins, make sure that the ball is on the beam 
         ResetToBeam();
-        // apply the occluder size hyperparameter (only affects the x span)
+        Random.seed = 42;
+        // apply t/he occluder size hyperparameter (only affects the x span)
         occluder.transform.localScale = new Vector3(occluderSpan, 1.0f, 2.74f);
         // clear the time accumulator
         timeSoFar = 0f;
