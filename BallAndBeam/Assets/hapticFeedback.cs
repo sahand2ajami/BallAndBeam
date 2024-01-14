@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+// using System.Mathf;
 using UnityEngine;
 using System.IO;
 using Valve.VR;
@@ -159,9 +160,9 @@ public class hapticFeedback : MonoBehaviour
         // 3. distance between the right anchor and the ball
         float distanceBetweenRightAndBall = distanceBetweenAnchors - distanceBetweenLeftAndBall;
         // 4. on the left hand: Right-Ball Distance / Left-Right Distance * ALPHA
-        leftAmplitude = (distanceBetweenRightAndBall / distanceBetweenAnchors) * amplitudeFactor;
+        leftAmplitude = Mathf.Log(distanceBetweenRightAndBall + 1) * amplitudeFactor;
         // 5. on the right hand: Left-Ball Distance / Left-Right Distance * ALPHA
-        rightAmplitude = (distanceBetweenLeftAndBall / distanceBetweenAnchors) * amplitudeFactor; 
+        rightAmplitude = Mathf.Log(distanceBetweenLeftAndBall + 1) * amplitudeFactor; 
         // first, render haptics for the left hand
         hapticAction.Execute(secondsFromNow, duration, frequency, leftAmplitude, SteamVR_Input_Sources.LeftHand);
         // then, render haptics for the right hand

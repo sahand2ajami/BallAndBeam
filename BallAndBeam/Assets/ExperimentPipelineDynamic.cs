@@ -14,6 +14,9 @@ public class ExperimentPipelineDynamic : MonoBehaviour
 
     public GameObject left_hand;
     public GameObject right_hand;
+
+    public GameObject leftHandModelRenderer;
+    public GameObject rightHandModelRenderer;
     // time duration constants for commencing experiment
     public float initialWait = 5.0f;
     public float interPhaseWait = 30.0f;
@@ -82,7 +85,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         if (beam.GetComponent<hapticFeedback>().leftHandIsHoldingBeam && beam.GetComponent<hapticFeedback>().rightHandIsHoldingBeam) 
         {
             state = ExperimentStateDynamic.StartingPhase;
-            phase = 1;
+            // phase = 1;
             startTime = Time.time;
         }
     }
@@ -92,7 +95,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         // begin trial in initialWait seconds
         float remainingTime = initialWait - (Time.time - startTime); 
         tmp.text = "Beginning phase " + phase + " in " + remainingTime.ToString("n2") + "s";
-        if (phase == 2)
+        if (phase == 2 || phase == 4)
         {
             hapticFeedback.hapticsEnabled = true;
         }
@@ -100,6 +103,15 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         {
             hapticFeedback.hapticsEnabled = false;
         }
+        if (phase == 1 || phase == 2)
+        {
+            hapticFeedback.yShift = 1000000000000;
+        }
+        else
+        {
+
+        }
+
         if (remainingTime <= 0.0f) 
         {
             state = ExperimentStateDynamic.RunningPhase;
