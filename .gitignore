@@ -71,5 +71,12 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-# Data from the user-study
-/BallAndBeam-project/BallAndBeam/data/
+# Ignore .mat files
+*.mat
+
+# Ignore .csv files
+*.csv
+
+# Ignore the 'data' folder
+/data/
+
