@@ -9,24 +9,35 @@ function SubjectData = mat2struct(start, stop, n_phase)
         cd(folderName(i).name);
         folderName_phase = dir('*');
 
-        data = struct();
-
         for k = start:start+n_phase-1
-            folderName_phase(k).name
+            folderName_phase(k).name;
             cd(folderName_phase(k).name);
-            
+
             % with'*.mat' dir will read .mat files only
             fileName = dir('*.mat');
+
+data = struct();
 
             if ~isempty(fileName)
 %                 length(fileName)
                 for j=1:length(fileName)
-                    phase_name = string(folderName_phase(k).name);
-                    data_name = string(fileName(j).name(1:end-4));
-                    data.(phase_name).(data_name) = load(fileName(j).name);
+                    load(fileName(j).name)
+                    name = string(fileName(j).name(1:end-4))
                     
-                    SubjectData = data;
+SubjectData = data;
                 end
+%                 SubjectData = data;
+    %                 for j = 1:length(fileName)
+                  
+             
+
+                % assign name for the field of the structure from the file
+                % name with ignoring the .mat part
+%                 name = string(fileName.name(1:end-4))
+%                 participant_data = struct(fileName.name(1:end-4), )
+    
+    
+    %                 end
             end
     
             % go back to the previous folder

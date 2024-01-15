@@ -18,6 +18,11 @@ cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\Ball
 % Input: start and stop numbers for looping the participants' folders
 csv2mat(start, stop, n_phase)
 
+%% Take all .mat files and integrate them in a structure file SubjectData
+
+SubjectData = mat2struct(start, stop, n_phase);
+ 
+
 %%
-% mat2struct(start, stop)
-% 
+% a = struct()
+% a.field = 5
