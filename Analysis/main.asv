@@ -8,16 +8,14 @@ start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
 num_participants = 1;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
-n_phase = 3; % this is the number of experiment phases that the participants had
-
 % This is where each participants' data are stored for this project
 cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot')
 
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
-csv2mat(start, stop, n_phase)
+csv2mat(start, stop)
 
 %%
-% mat2struct(start, stop)
-% 
+mat2struct(start, stop)
+

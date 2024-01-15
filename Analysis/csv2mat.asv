@@ -13,7 +13,7 @@ function csv2mat(start, stop, n_phase)
         for k = start:start+n_phase-1
             folderName_phase(k).name
             cd(folderName_phase(k).name);
-
+            
             % with'*.csv' dir will read csv files only
             fileName = dir('*.csv')
         
@@ -29,7 +29,7 @@ function csv2mat(start, stop, n_phase)
             end
     
         % go back to the main folder
-        cd ..
+%         cd ..
         end
 
 
