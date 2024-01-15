@@ -18,6 +18,8 @@ public class BalanceDynamic : MonoBehaviour
     public int totalFail = 0;
     public int totalSuccess = 0;
 
+    public hapticFeedback hapticFeedback;
+
     public bool occlusionEnabled = false;
     public bool targetTimerStarted = false;
     public float targetMovementStartTime = 0f;
@@ -38,14 +40,18 @@ public class BalanceDynamic : MonoBehaviour
         ResetToBeam();
         Random.seed = 42;
         // apply t/he occluder size hyperparameter (only affects the x span)
-        occluder.transform.localScale = new Vector3(occluderSpan, 1.0f, 2.74f);
+        occluderSpan = occluder.transform.localScale.x; 
         // clear the time accumulator
         timeSoFar = 0f;
         // position the occluder outside the center strip
         if (occlusionEnabled)
         {
-
-            float newOccluderXPosition = Random.Range(0f, 1f) <= 0.5f ? Random.Range(-0.35f, -0.25f) : Random.Range(0.25f, 0.35f);
+            float upperLimit = hapticFeedback.shoulderWidth / 2 - occluderSpan/2;
+            // Generate a random value of -1 or 1
+            int randomSign = (Random.Range(0, 2) == 0) ? -1 : 1;
+            float newOccluderXPosition = Random.Range(occluderSpan/2 + target.transform.localScale.x/2, upperLimit);
+            // Change the sign of the original number
+            newOccluderXPosition = newOccluderXPosition * randomSign;
             occluder.transform.position = new Vector3(newOccluderXPosition, beam.transform.position.y, occluder.transform.position.z);
         }
     }
@@ -125,8 +131,17 @@ public class BalanceDynamic : MonoBehaviour
         //target.transform.localEulerAngles = beam.transform.localEulerAngles;
         if (occlusionEnabled)
         {
-            float newOccluderXPosition = Random.Range(-0.3f, 0.3f);
-            occluder.transform.position = new Vector3(newOccluderXPosition, beam.transform.position.y, occluder.transform.position.z);
+            float upperLimit = hapticFeedback.shoulderWidth / 2 - occluderSpan/2;
+            // Generate a random value of -1 or 1
+            int randomSign = (Random.Range(0, 2) == 0) ? -1 : 1;
+            float newOccluderXPosition = Random.Range(occluderSpan/2 + target.transform.localScale.x/2, upperLimit);
+            // Change the sign of the original number
+            newOccluderXPosition = newOccluderXPosition * randomSign;
+            Debug.Log(occluderSpan/2 + target.transform.localScale.x/2);
+            Debug.Log(newOccluderXPosition);
+            Debug.Log(upperLimit);
+            
+            occluder.transform.localPosition = new Vector3(newOccluderXPosition, beam.transform.position.y, occluder.transform.localPosition.z);
         }
     }
 

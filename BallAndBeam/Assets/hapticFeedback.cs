@@ -40,7 +40,7 @@ public class hapticFeedback : MonoBehaviour
     public bool tableIsActive = true;
 
     // variables for position/rotation tracking once beam is held up
-    public float sholderWidth = 0.46f; // * const
+    public float shoulderWidth = 0.46f; // * const
     public float leftHandYBaseline = 0f;
     public float rightHandYBaseline = 0f;
 
@@ -55,7 +55,7 @@ public class hapticFeedback : MonoBehaviour
         if (triggerValueL > 0.0f)
         {
             leftHandIsHoldingBeam = true;
-            staticLeftHandFollower.transform.position = new Vector3(-sholderWidth/2, staticLeftHandFollower.transform.position.y, staticLeftHandFollower.transform.position.z);
+            staticLeftHandFollower.transform.position = new Vector3(-shoulderWidth/2, staticLeftHandFollower.transform.position.y, staticLeftHandFollower.transform.position.z);
             leftHandYBaseline = leftHandModel.transform.position.y;
             // Debug.Log("left" + staticLeftHandFollower.transform.rotation);
 
@@ -63,7 +63,7 @@ public class hapticFeedback : MonoBehaviour
         if (triggerValueR > 0.0f)
         {
             rightHandIsHoldingBeam = true;
-            staticRightHandFollower.transform.position = new Vector3(sholderWidth/2, staticRightHandFollower.transform.position.y, staticRightHandFollower.transform.position.z);
+            staticRightHandFollower.transform.position = new Vector3(shoulderWidth/2, staticRightHandFollower.transform.position.y, staticRightHandFollower.transform.position.z);
             rightHandYBaseline = rightHandModel.transform.position.y;
 
         }        

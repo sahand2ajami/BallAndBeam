@@ -12,6 +12,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
 
     public Logger logger;
 
+    public Communications communications;
+
     public GameObject left_hand;
     public GameObject right_hand;
 
@@ -145,13 +147,13 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         }
 
         // stuff related to end of phase
-        if (remaining == 0 && phase != 3)
+        if (remaining == 0 && phase != 4)
         {
             state = ExperimentStateDynamic.PhaseBreak;
             startTime = Time.time;
             ball.GetComponent<BalanceDynamic>().ClearSuccessAndFail();
         } 
-        else if (remaining == 0 && phase == 3)
+        else if (remaining == 0 && phase == 4)
         {
             state = ExperimentStateDynamic.End;
         }
@@ -189,7 +191,9 @@ public class ExperimentPipelineDynamic : MonoBehaviour
             trialState = TrialStateDynamic.TrialRunning;
             ball.GetComponent<Rigidbody>().isKinematic = false;
             ball.GetComponent<BalanceDynamic>().targetMovementStartTime = Time.time;
+            // communications.Log(communications.serial_port, "c"); //Start recording
         }
+        
     }
 
     void TrialRunning(int trialNumber)
@@ -204,13 +208,13 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         logger.WriteCSVPositions("target", ball.GetComponent<BalanceDynamic>().target.transform.position, trialNumber, phase);
         logger.WriteCSVPositions("occluder", ball.GetComponent<BalanceDynamic>().occluder.transform.position, trialNumber, phase);
         logger.WriteCSVPositions("left_hand", left_hand.transform.position, trialNumber, phase);
-        logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);
-
+        logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);  
     }
 
     void TrialEnd(int trialNumber)
     {
         // freeze ball and switch states
+        // communications.Log(communications.serial_port, "b");
         ball.GetComponent<Rigidbody>().isKinematic = true;
         trialState = TrialStateDynamic.TrialStart;
         // start timer
