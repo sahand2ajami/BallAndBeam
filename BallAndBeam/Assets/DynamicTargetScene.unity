@@ -1525,8 +1525,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1144976116}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.1484, y: 3.4, z: -0.32}
-  m_LocalScale: {x: 0.01, y: 1, z: 1}
+  m_LocalPosition: {x: 0.0532, y: 0, z: -0.32}
+  m_LocalScale: {x: 0.006, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 954687468}
@@ -1954,6 +1954,7 @@ MonoBehaviour:
   success: 0
   totalFail: 0
   totalSuccess: 0
+  hapticFeedback: {fileID: 954687470}
   occlusionEnabled: 1
   targetTimerStarted: 0
   targetMovementStartTime: 0

@@ -208,7 +208,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         logger.WriteCSVPositions("target", ball.GetComponent<BalanceDynamic>().target.transform.position, trialNumber, phase);
         logger.WriteCSVPositions("occluder", ball.GetComponent<BalanceDynamic>().occluder.transform.position, trialNumber, phase);
         logger.WriteCSVPositions("left_hand", left_hand.transform.position, trialNumber, phase);
-        logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);  
+        logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);
+        logger.WriteCSVTime("time", Time.time - startTime, trialNumber, phase);
     }
 
     void TrialEnd(int trialNumber)

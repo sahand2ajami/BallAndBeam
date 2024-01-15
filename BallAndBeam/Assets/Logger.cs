@@ -6,7 +6,7 @@ using System.IO;
 
 public class Logger : MonoBehaviour
 {
-
+// path: C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data
     public string dir = "C:\\Users\\s2ajami\\Desktop\\data\\";
     // Start is called before the first frame update
     void Start()
@@ -54,6 +54,26 @@ public class Logger : MonoBehaviour
         }
         // sw.Close();
     }
+
+
+public void WriteCSVTime(string filename, float time, int trialNumber, int phaseNumber)
+    {   
+        bool exists = false;
+        if (File.Exists(dir + filename + ".csv")){
+            exists = true;
+        }
+        using(StreamWriter sw = File.AppendText(dir + filename + ".csv"))
+        {        
+            //DateTime now = DateTime.Now;
+            if (!exists) 
+            { 
+                sw.WriteLine("time,trialNumber,phaseNumber");
+            }
+            sw.WriteLine(time + "," + trialNumber+ "," + phaseNumber);
+        }
+        // sw.Close();
+    }
+
     public void WriteCSVList(string filename, float trackingTime, int trialNumber, int phaseNumber)
     {   
         bool exists = false;
