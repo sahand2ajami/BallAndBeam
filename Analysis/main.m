@@ -21,8 +21,33 @@ csv2mat(start, stop, n_phase)
 %% Take all .mat files and integrate them in a structure file SubjectData
 
 SubjectData = mat2struct(start, stop, n_phase);
- 
 
-%%
-% a = struct()
-% a.field = 5
+% Get the field names
+fieldNames = fieldnames(SubjectData);
+% Count the number of which is the number of fields
+n_participants = numel(fieldNames);
+%% Ball movement analysis
+% Here we see how long did ball stayed on target
+
+
+% Get the field names
+participants = fieldnames(SubjectData);
+
+for i = 1:size(participants, 1)
+    phase = SubjectData.(participants{i});
+    phase = fieldnames(phase);
+
+    for j = 1:size(phase, 1)
+        switch str2double(phase{j}(length(phase{j})))
+            case 1
+
+
+            case 2
+
+            case 3
+                
+            case 4
+
+        end
+    end
+end

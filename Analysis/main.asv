@@ -8,14 +8,47 @@ start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
 num_participants = 1;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
+n_phase = 3; % this is the number of experiment phases that the participants had
+
 % This is where each participants' data are stored for this project
 cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot')
 
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
-csv2mat(start, stop)
+csv2mat(start, stop, n_phase)
 
-%%
-mat2struct(start, stop)
+%% Take all .mat files and integrate them in a structure file SubjectData
 
+SubjectData = mat2struct(start, stop, n_phase);
+
+% Get the field names
+fieldNames = fieldnames(SubjectData);
+
+% Count the number of which is the number of fields
+n_participants = numel(fieldNames);
+%% Ball movement analysis
+% Here we see how long did ball stayed on target
+
+
+% Get the field names
+participants = fieldnames(SubjectData);
+
+for i = 1:size(participants, 1)
+    phase = SubjectData.(participants{i});
+    phase = fieldnames(phase);
+
+    for j = 1:size(phase, 1)
+        switch str2double(phase{j}(length(phase{j})))
+            case 1
+
+
+            case 2
+
+            case 3
+                disp("kir")
+            case 4
+
+        end
+    end
+end
