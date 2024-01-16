@@ -1,10 +1,9 @@
 function SubjectData = mat2struct(start, stop, n_phase)
 
-% with'*.' dir will read folder names only
+    % with'*.' dir will read folder names only
     folderName = dir('*');
     
-%     trialcount = 1; 
-% i starts from 3 becasue folderName first two elements are '.' and '..'
+    % i starts from 3 because folderName first two elements are '.' and '..'
     for i = start:stop
         % go to the folder
         cd(folderName(i).name);
@@ -34,11 +33,6 @@ function SubjectData = mat2struct(start, stop, n_phase)
                     for trialnumber = 1:max(my_file.data.TrialNumber)
                         data.(strcat('S', '_', folderName(i).name(1:2))).(phase_name).(strcat("trial", num2str(trialnumber))).(data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
                         SubjectData = data;
-
-%                     if max(my_file.data.TrialNumber) >= trialcount
-%                         data.(strcat('S', '_', folderName(i).name(1:2))).(phase_name).(data_name) = load(fileName(j).name);
-                        
-%                         trialcount = trialcount + 1; 
                     end
                 end
             end

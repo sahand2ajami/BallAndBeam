@@ -26,28 +26,108 @@ SubjectData = mat2struct(start, stop, n_phase);
 fieldNames = fieldnames(SubjectData);
 % Count the number of which is the number of fields
 n_participants = numel(fieldNames);
+
+Metrics = struct();
+%% Cleaning the time from the data
+
 %% Ball movement analysis
 % Here we see how long did ball stayed on target
 
+% ball_data = struct();
+% target_data = struct(); 
 
 % Get the field names
-participants = fieldnames(SubjectData);
+participants_list = fieldnames(SubjectData);
 
-for i = 1:size(participants, 1)
-    phase = SubjectData.(participants{i});
-    phase = fieldnames(phase);
+% These need to be checked before the final version of the code. 
+threshold = 0.1;
+occluder_boundary = 0.1;
 
-    for j = 1:size(phase, 1)
-        switch str2double(phase{j}(length(phase{j})))
-            case 1
+% This loops in participants
+for i = 1:size(participants_list, 1)
+    phases = SubjectData.(participants_list{i});
+    phases_list = fieldnames(phases);
 
+    % This loops in the phases
+    for j = 1:size(phases_list, 1)
+        trials = SubjectData.(participants_list{i}).(phases_list{j});
+        trials_list = fieldnames(trials);
+        % This loops in the trials
+        for k = 1:size(trials_list, 1)
 
-            case 2
+            % Extract the trajectory of the ball
+            ball_trajectory = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X;
+            
+            % Extract the time of each trial
+            time_array = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).time.time;
+            time_array = time_array - time_array(1);
+            
+            %%% Ball on target overall %%%
+            % Calculate the overall time that the ball stayed on the target
+            % by checking the difference between the trajctory of the ball
+            % and the target
+            ball_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+            target_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).target.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+            
+            difference = ball_data.X - target_data.X;
+            ball_on_target = ball_data((abs(difference) < threshold), :);
 
-            case 3
-                
-            case 4
+            ball_on_target_time = seconds(ball_on_target.Time(end) - ball_on_target.Time(1));
+            ball_on_target_time_meanstd(k, 1) = ball_on_target_time;
+            
+            % Save the over all time trial by trial
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.Trials.(trials_list{k}) = ball_on_target_time;
 
+            %%% Ball on target (behind the occluder version) %%%
+            % Calculate the overall time that the ball stayed on the target
+            % behind the occluder
+            % by checking the difference between the trajctory of the ball
+            % and the target behind the occluder
+            occluder_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).occluder.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+            occluder_data = mean(occluder_data.X);
+
+            difference = ball_on_target.X - occluder_data;
+            ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
+            if isempty(ball_on_target_behind_occluder)
+                ball_on_target_behind_occluder_time = 0;
+                ball_on_target_behind_occluder_time_meanstd(k, 1) = 0;
+            else
+                ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
+                ball_on_target_behind_occluder_time_meanstd(k, 1) = ball_on_target_behind_occluder_time;
+            end
+
+            % Save the over all time trial by trial
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Trials.(trials_list{k}) = ball_on_target_behind_occluder_time;
+        
+            %%% Jerk metric %%%
+            % Extract the hand trajectories
+            left_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).left_hand;
+            right_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).right_hand;
+%             left_jerk = ?? To Be coded later
+%             right_jerk = ?? to be coded later
+            Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+            Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+%             Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Jerk = % to be coded later
+%             Metrics.(phases_list{j}).(participants_list{i}).RightHand.Jerk = % to be coded later
         end
+
+        % Save the mean and std of over the trials from each participant
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Mean = mean(ball_on_target_behind_occluder_time_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.STD = std(ball_on_target_behind_occluder_time_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Median = median(ball_on_target_behind_occluder_time_meanstd);
+
+%         for k = 1:size(trials_list)
+
+%         switch str2double(phase{j}(length(phase{j})))
+%             case 1
+                
+%             case 2
+
+%             case 3
+%                 ball_data_phase3 = SubjectData.(participants{i}).phase3.
+%             case 4
+%         end
     end
 end
+
+%% Jerk analysis (from right_hand and left_hand)
