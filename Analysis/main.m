@@ -103,12 +103,36 @@ for i = 1:size(participants_list, 1)
             % Extract the hand trajectories
             left_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).left_hand;
             right_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).right_hand;
-%             left_jerk = ?? To Be coded later
-%             right_jerk = ?? to be coded later
-            Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
-            Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
-%             Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Jerk = % to be coded later
-%             Metrics.(phases_list{j}).(participants_list{i}).RightHand.Jerk = % to be coded later
+
+            left_hand_timetable = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+            right_hand_timetable = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+            
+            Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = left_hand_timetable;
+            Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = right_hand_timetable;
+            k
+            disp("left")
+            [jerk_metric_left, speed_metric_left] = traj_analysis(left_hand_timetable);
+            disp("right")
+            [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
+
+            [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
+                = smoothness_combinator(jerk_metric_left, jerk_metric_right);
+
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.arithmetic_mean = arithmetic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.geometric_mean = geometric_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.rms = rms;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.harmonic = harmonic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.vector_sum = vector_sum;
+            
+            [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
+                = smoothness_combinator(speed_metric_left, speed_metric_right);
+
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.arithmetic_mean = arithmetic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.geometric_mean = geometric_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.rms = rms;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.harmonic = harmonic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.vector_sum = vector_sum;
+            
         end
 
         % Save the mean and std of over the trials from each participant
