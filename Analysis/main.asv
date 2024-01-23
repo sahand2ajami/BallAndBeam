@@ -93,10 +93,10 @@ for i = 1:size(participants_list, 1)
             ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
             if isempty(ball_on_target_behind_occluder)
                 ball_on_target_behind_occluder_time = 0;
-                ball_on_target_behind_occluder_time_meanstd(k, 1) = 0;
+                ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = 0;
             else
                 ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
-                ball_on_target_behind_occluder_time_meanstd(k, 1) = ball_on_target_behind_occluder_time;
+                ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = ball_on_target_behind_occluder_time;
             end
 
             % Save the over all time trial by trial
@@ -126,17 +126,25 @@ for i = 1:size(participants_list, 1)
             % Append the left hand smoothness metrics into _meanstd
             % variable which is used later to calculate the mean and std of
             % each participant over their trials
-            jerk_metric_left_meanstd(k,1) = jerk_metric_left;
-            speed_metric_left_meanstd(k,1) = speed_metric_left;
+            jerk_metric_left_meanstd_trialwise(k,1) = jerk_metric_left;
+            speed_metric_left_meanstd_trialwise(k,1) = speed_metric_left;
 
             % Analyze the right hand trajectory and extract speed and jerk
             % metrics for smoothness
             [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
+
+            % Save the right hand smoothness metrics into Metrics variable
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.Trials.(trials_list{k}) = jerk_metric_right;
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.Trials.(trials_list{k}) = speed_metric_right;
-            jerk_metric_right_meanstd(k,1) = jerk_metric_right;
-            speed_metric_right_meanstd(k,1) = speed_metric_right;
+            
+            % Append the right hand smoothness into _meanstd variable which
+            % is used later to calculate the mean and std of each
+            % participant over their trials
+            jerk_metric_right_meanstd_trialwise(k,1) = jerk_metric_right;
+            speed_metric_right_meanstd_trialwise(k,1) = speed_metric_right;
 
+            % Combine the two hands smoothness metrics by calculating
+            % different means
             [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
                 = smoothness_combinator(jerk_metric_left, jerk_metric_right);
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
@@ -154,21 +162,75 @@ for i = 1:size(participants_list, 1)
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
         end
 
-        % Save the mean and std of over the trials from each participant
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Mean = mean(ball_on_target_behind_occluder_time_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.STD = std(ball_on_target_behind_occluder_time_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Median = median(ball_on_target_behind_occluder_time_meanstd);
+        %%% Save the mean and std of over the trials from each participant
+        % The time that ball stays on the target
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd;
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd);
 
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd);
+        % The time that ball stays on the target while behind the occluder
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.arrayovertrials = ball_on_target_behind_occluder_time_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.median = median(ball_on_target_behind_occluder_time_meanstd_trialwise);
+        
+        % jerk metric of the left hand
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.arrayovertrials = jerk_metric_left_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd_trialwise);
 
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd);
+        % Jerk metric of the right hand
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.arrayovertrials = jerk_metric_right_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd_trialwise);
+
+        % Speed metric of the left hand
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.arrayovertrials = speed_metric_left_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd_trialwise);
+
+        % Speed metric of the right hand
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.arrayovertrials = speed_metric_right_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd_trialwise);
+
+        % Append the mean of each metric into an array so that they can be
+        % used in calculation of the mean across participants
+        ball_on_target_time_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean;
+        ball_on_target_behind_occluder_time_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean;
+        jerk_metric_left_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean;
+        jerk_metric_right_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean;
+        speed_metric_left_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean;
+        speed_metric_right_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean;
     end
+
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.array = ball_on_target_time_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.mean = mean(ball_on_target_time_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.std = std(ball_on_target_time_mean_participantwise);
+
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.array = ball_on_target_behind_occluder_time_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_mean_participantwise);
+
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.array = jerk_metric_left_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.mean = mean(jerk_metric_left_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.std = std(jerk_metric_left_mean_participantwise);
+
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.array = jerk_metric_right_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.mean = mean(jerk_metric_right_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.std = std(jerk_metric_right_mean_participantwise);
+
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.array = speed_metric_left_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.mean = mean(speed_metric_left_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.std = std(speed_metric_left_mean_participantwise);
+
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise;
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise);
+    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise);
+
+
 end
 
-%% Jerk analysis (from right_hand and left_hand)
+my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.mean, ...
+    Metrics_overparticipants.(phases_list{2}).Smoothness.speed.right.mean, ...
+    2, 'Linux Libertine G', 9, 'kir1', 'kir2', [0, 10])
