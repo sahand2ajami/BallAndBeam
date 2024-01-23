@@ -43,6 +43,9 @@ participants_list = fieldnames(SubjectData);
 threshold = 0.1;
 occluder_boundary = 0.1;
 
+% variables to calculate mean and std of different metrics.
+
+
 % This loops in participants
 for i = 1:size(participants_list, 1)
     phases = SubjectData.(participants_list{i});
@@ -99,40 +102,64 @@ for i = 1:size(participants_list, 1)
             % Save the over all time trial by trial
             Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Trials.(trials_list{k}) = ball_on_target_behind_occluder_time;
         
-            %%% Jerk metric %%%
+            %%% Smoothness metric %%%
             % Extract the hand trajectories
             left_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).left_hand;
             right_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).right_hand;
-
+            
+            % Save the trajectory into time tables
             left_hand_timetable = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
             right_hand_timetable = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
             
+            % Save the trajectories into Metrics variable
             Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = left_hand_timetable;
             Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = right_hand_timetable;
-            k
-            disp("left")
+            
+            % Analyze the left hand trajectory and extract speed and jerk
+            % metrics for smoothness
             [jerk_metric_left, speed_metric_left] = traj_analysis(left_hand_timetable);
-            disp("right")
+            
+            % Save the left hand smoothness metrics into Metrics variable
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.Trials.(trials_list{k}) = jerk_metric_left;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.Trials.(trials_list{k}) = speed_metric_left;
+            
+            % Append the left hand smoothness metrics into _meanstd
+            % variable which is used later to calculate the mean and std of
+            % each participant over their trials
+            jerk_metric_left_meanstd(k,1) = jerk_metric_left;
+            speed_metric_left_meanstd(k,1) = speed_metric_left;
+
+            % Analyze the right hand trajectory and extract speed and jerk
+            % metrics for smoothness
             [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
 
+            % Save the right hand smoothness metrics into Metrics variable
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.Trials.(trials_list{k}) = jerk_metric_right;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.Trials.(trials_list{k}) = speed_metric_right;
+            
+            % Append the right hand smoothness into _meanstd variable which
+            % is used later to calculate the mean and std of each
+            % participant over their trials
+            jerk_metric_right_meanstd(k,1) = jerk_metric_right;
+            speed_metric_right_meanstd(k,1) = speed_metric_right;
+
+            % Combine the two hands smoothness metrics by calculating
+            % different means
             [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
                 = smoothness_combinator(jerk_metric_left, jerk_metric_right);
-
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.arithmetic_mean = arithmetic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.geometric_mean = geometric_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.rms = rms;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.harmonic = harmonic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).jerk.vector_sum = vector_sum;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.rms.Trials.(trials_list{k}) = rms;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
             
             [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
                 = smoothness_combinator(speed_metric_left, speed_metric_right);
-
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.arithmetic_mean = arithmetic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.geometric_mean = geometric_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.rms = rms;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.harmonic = harmonic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.Trials.(trials_list{k}).speed.vector_sum = vector_sum;
-            
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.rms.Trials.(trials_list{k}) = rms;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
         end
 
         % Save the mean and std of over the trials from each participant
@@ -140,17 +167,15 @@ for i = 1:size(participants_list, 1)
         Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.STD = std(ball_on_target_behind_occluder_time_meanstd);
         Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Median = median(ball_on_target_behind_occluder_time_meanstd);
 
-%         for k = 1:size(trials_list)
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd);
 
-%         switch str2double(phase{j}(length(phase{j})))
-%             case 1
-                
-%             case 2
-
-%             case 3
-%                 ball_data_phase3 = SubjectData.(participants{i}).phase3.
-%             case 4
-%         end
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd);
     end
 end
 
