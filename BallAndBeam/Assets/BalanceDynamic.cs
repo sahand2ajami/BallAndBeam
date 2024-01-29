@@ -27,7 +27,7 @@ public class BalanceDynamic : MonoBehaviour
     public float timeSoFar = 0f;
     public float timeThreshold = 3f;
     public List<float> trackingTimeList;
-    public float angularVelocity = 0.33f;
+    public float angularVelocity = 0.1f;
     public float timePeriod = 6f;
     public float targetMovementAmplitude = 0.4f;
 

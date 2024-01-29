@@ -22,7 +22,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     // time duration constants for commencing experiment
     public float initialWait = 5.0f;
     public float interPhaseWait = 30.0f;
-    public float interTrialWait = 3.0f;
+    public float interTrialWait = 60.0f;
 
     // misc variables for state tracking
     public float startTime = 0f;

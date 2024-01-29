@@ -5,10 +5,10 @@ format compact
 %% Convert .csv files to .mat format
 
 start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
-num_participants = 1;
+num_participants = 2;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
-n_phase = 3; % this is the number of experiment phases that the participants had
+% n_phase = 4; % this is the number of experiment phases that the participants had
 
 % This is where each participants' data are stored for this project
 cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot')
@@ -16,11 +16,13 @@ cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\Ball
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
-csv2mat(start, stop, n_phase)
-
+csv2mat(start, stop)
+%%
+% folderName_phase = dir('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot\02 - Sahand')
 %% Take all .mat files and integrate them in a structure file SubjectData
 
-SubjectData = mat2struct(start, stop, n_phase);
+SubjectData = struct();
+SubjectData = mat2struct(SubjectData, start, stop);
 
 % Get the field names
 fieldNames = fieldnames(SubjectData);
@@ -40,8 +42,8 @@ Metrics = struct();
 participants_list = fieldnames(SubjectData);
 
 % These need to be checked before the final version of the code. 
-threshold = 0.1;
-occluder_boundary = 0.1;
+target_boundary = 0.03;
+occluder_boundary = 1;
 
 % variables to calculate mean and std of different metrics.
 
@@ -50,7 +52,7 @@ occluder_boundary = 0.1;
 for i = 1:size(participants_list, 1)
     phases = SubjectData.(participants_list{i});
     phases_list = fieldnames(phases);
-
+    
     % This loops in the phases
     for j = 1:size(phases_list, 1)
         trials = SubjectData.(participants_list{i}).(phases_list{j});
@@ -72,12 +74,14 @@ for i = 1:size(participants_list, 1)
             ball_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
             target_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).target.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
             
-            difference = ball_data.X - target_data.X;
-            ball_on_target = ball_data((abs(difference) < threshold), :);
+%             difference = ball_data.X - target_data.X;
+%             ball_on_target = ball_data((abs(difference) < threshold), :);
 
-            ball_on_target_time = seconds(ball_on_target.Time(end) - ball_on_target.Time(1));
-            ball_on_target_time_meanstd(k, 1) = ball_on_target_time;
-            
+            % Extracts the time that the ball was on the target in each
+            % trial
+            ball_on_target_time = ball_on_target_time_extractor(ball_data, target_data, target_boundary);
+
+            ball_on_target_time_meanstd_trialwise(k,1) = ball_on_target_time;
             % Save the over all time trial by trial
             Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.Trials.(trials_list{k}) = ball_on_target_time;
 
@@ -89,15 +93,21 @@ for i = 1:size(participants_list, 1)
             occluder_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).occluder.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
             occluder_data = mean(occluder_data.X);
 
-            difference = ball_on_target.X - occluder_data;
-            ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
-            if isempty(ball_on_target_behind_occluder)
-                ball_on_target_behind_occluder_time = 0;
-                ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = 0;
-            else
-                ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
+            difference = ball_data.X - target_data.X;
+            ball_on_target = ball_data((abs(difference) < target_boundary), :);
+
+%             target_boundary
+            ball_on_target_behind_occluder_time = ball_on_target_behind_occluder_time_extractor(ball_data,target_data, occluder_data, target_boundary, occluder_boundary);
+%             ball_on_target_behindoccluder_time = time_extractor(abs(difference), occluder_data, occluder_boundary)
+%             difference = ball_on_target.X - occluder_data;
+%             ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
+%             if isempty(ball_on_target_behind_occluder)
+%                 ball_on_target_behind_occluder_time = 0;
+%                 ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = 0;
+%             else
+%                 ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
                 ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = ball_on_target_behind_occluder_time;
-            end
+%             end
 
             % Save the over all time trial by trial
             Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Trials.(trials_list{k}) = ball_on_target_behind_occluder_time;
@@ -164,9 +174,9 @@ for i = 1:size(participants_list, 1)
 
         %%% Save the mean and std of over the trials from each participant
         % The time that ball stays on the target
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd;
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd_trialwise;
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd_trialwise);
+        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd_trialwise);
 
         % The time that ball stays on the target while behind the occluder
         Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.arrayovertrials = ball_on_target_behind_occluder_time_meanstd_trialwise;
@@ -196,42 +206,51 @@ for i = 1:size(participants_list, 1)
 
         % Append the mean of each metric into an array so that they can be
         % used in calculation of the mean across participants
-        ball_on_target_time_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean;
-        ball_on_target_behind_occluder_time_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean;
-        jerk_metric_left_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean;
-        jerk_metric_right_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean;
-        speed_metric_left_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean;
-        speed_metric_right_mean_participantwise(i, 1) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean;
+        ball_on_target_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean;
+        ball_on_target_behind_occluder_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean;
+        jerk_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean;
+        jerk_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean;
+        speed_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean;
+        speed_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean;
+
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.array = ball_on_target_time_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.mean = mean(ball_on_target_time_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.std = std(ball_on_target_time_mean_participantwise(:, j));
+
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.array = ball_on_target_behind_occluder_time_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
+    
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.array = jerk_metric_left_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.mean = mean(jerk_metric_left_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.std = std(jerk_metric_left_mean_participantwise(:, j));
+    
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.array = jerk_metric_right_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.mean = mean(jerk_metric_right_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.std = std(jerk_metric_right_mean_participantwise(:, j));
+    
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.array = speed_metric_left_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.mean = mean(speed_metric_left_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.std = std(speed_metric_left_mean_participantwise(:, j));
+    
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise(:, j);
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise(:, j));
+        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise(:, j));
     end
-
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.array = ball_on_target_time_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.mean = mean(ball_on_target_time_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.std = std(ball_on_target_time_mean_participantwise);
-
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.array = ball_on_target_behind_occluder_time_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_mean_participantwise);
-
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.array = jerk_metric_left_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.mean = mean(jerk_metric_left_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.std = std(jerk_metric_left_mean_participantwise);
-
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.array = jerk_metric_right_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.mean = mean(jerk_metric_right_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.std = std(jerk_metric_right_mean_participantwise);
-
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.array = speed_metric_left_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.mean = mean(speed_metric_left_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.std = std(speed_metric_left_mean_participantwise);
-
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise;
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise);
-    Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise);
-
-
 end
+
 %%
 close all
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.mean, ...
-    Metrics_overparticipants.(phases_list{1}).Smoothness.speed.left.mean, ...
-    55, 'Linux Libertine G', 9, 'right', 'left', [0, 0.5], 'title');
+figure
+my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array, ...
+    Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array, ...
+    Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array, ...
+    Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array, ...
+    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target");
+
+figure
+my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetBehindOccluderTime.array, ...
+    Metrics_overparticipants.(phases_list{2}).BallOnTargetBehindOccluderTime.array, ...
+    Metrics_overparticipants.(phases_list{3}).BallOnTargetBehindOccluderTime.array, ...
+    Metrics_overparticipants.(phases_list{4}).BallOnTargetBehindOccluderTime.array, ...
+    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target Behind the Occluder");

@@ -1526,7 +1526,7 @@ Transform:
   m_GameObject: {fileID: 1144976116}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0.0532, y: 0, z: -0.32}
-  m_LocalScale: {x: 0.006, y: 1, z: 1}
+  m_LocalScale: {x: 0.01, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 954687468}
@@ -1962,8 +1962,8 @@ MonoBehaviour:
   timeSoFar: 0
   timeThreshold: 1
   trackingTimeList: []
-  angularVelocity: 0.33
-  timePeriod: 10
+  angularVelocity: 0.1
+  timePeriod: 20
   targetMovementAmplitude: 0.4
   experiment: {fileID: 1872429773}
 --- !u!1 &1872429773
@@ -2031,7 +2031,7 @@ MonoBehaviour:
   state: 0
   trialState: 0
   hapticFeedback: {fileID: 954687470}
-  phase: 3
+  phase: 4
   trialsPerPhase: 5
 --- !u!1 &1895149438
 GameObject:

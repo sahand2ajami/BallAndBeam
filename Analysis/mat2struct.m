@@ -1,4 +1,4 @@
-function SubjectData = mat2struct(start, stop, n_phase)
+function SubjectData = mat2struct(SubjectData, start, stop)
 
     % with'*.' dir will read folder names only
     folderName = dir('*');
@@ -14,6 +14,7 @@ function SubjectData = mat2struct(start, stop, n_phase)
 
         % This is in participants folder and loops between each phase the
         % term k starts from 3 to ignore the first two elemets '.' and '..'
+        n_phase = length(folderName_phase) - 2;
         for k = start:start+n_phase-1
             
             % Go through each phase folder
@@ -31,8 +32,9 @@ function SubjectData = mat2struct(start, stop, n_phase)
                     % load the .mat data into the data structure
                     my_file = load(fileName(j).name);
                     for trialnumber = 1:max(my_file.data.TrialNumber)
-                        data.(strcat('S', '_', folderName(i).name(1:2))).(phase_name).(strcat("trial", num2str(trialnumber))).(data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
-                        SubjectData = data;
+                        SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
+                            (phase_name).(strcat("trial", num2str(trialnumber))). ...
+                            (data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
                     end
                 end
             end

@@ -46,7 +46,7 @@ peak_vel = max(abs(v3D));
 % The Speed Metric (SM) is measured as the ratio between the mean velocity
 % and the peak of velocity [1]
 % The SM value increases when movement smoothness increases
-speed_metric = mean_vel ./ peak_vel
+speed_metric = mean_vel ./ peak_vel;
 
 %% Acceleration calculation
 ddx = diff(vx);  % change in x position

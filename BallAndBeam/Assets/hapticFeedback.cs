@@ -148,10 +148,10 @@ public class hapticFeedback : MonoBehaviour
         // parameters for API call
         float secondsFromNow = 0f;
         float duration = 1/60.0f;
-        float frequency = 100f;
+        float frequency = 50f;
         float leftAmplitude = 0f;
         float rightAmplitude = 0f;
-        float amplitudeFactor = 0.8f;
+        float amplitudeFactor = 0.2f;
         // compute lerp for position of ball
         // 1. distance between the two anchors
         float distanceBetweenAnchors = Vector3.Distance(leftAnchor.transform.position, rightAnchor.transform.position);

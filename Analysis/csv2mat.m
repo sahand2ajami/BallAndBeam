@@ -1,4 +1,4 @@
-function csv2mat(start, stop, n_phase)
+function csv2mat(start, stop)
 
     % with'*.' dir will read folder names only
     folderName = dir('*');
@@ -6,11 +6,16 @@ function csv2mat(start, stop, n_phase)
     % i starts fom 3 becasue folderName first two elements are '.' and '..'
     for i = start:stop
         % go to the folder
-        folderName(i).name;
+        folderName;
+        folderName(i).name
         cd(folderName(i).name);
         folderName_phase = dir('*');
-
+        % folderName_phase.name
+        n_phase = length(folderName_phase) - 2;
+%         n_phase
+%         start
         for k = start:start+n_phase-1
+            folderName_phase(k).name;
             folderName_phase(k).name;
             cd(folderName_phase(k).name);
 
