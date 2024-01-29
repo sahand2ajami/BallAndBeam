@@ -3,7 +3,7 @@ function final_time = ball_on_target_behind_occluder_time_extractor(traj1,traj2,
 %   traj1 and traj2 should be timetables
 
 difference = (traj1.X - traj2.X);
-within_range = (abs(difference) < threshold1 & abs(traj2.X - occluder_pos) < threshold2);
+within_range = ((abs(difference) < threshold1) & (abs(traj1.X - occluder_pos) < threshold2));
 
 % Add zero padding at the beginning and end to detect sequences at the edges
 within_range = [0; within_range; 0];
@@ -18,7 +18,9 @@ ends = find(changes == -1) - 1;
 % Pairing start and end indices
 % sequences = [starts; ends]
 final_time = 0;
-for i = 1:length(starts)
-    my_time = seconds(traj1.Time(ends(i)) - traj1.Time(starts(i)));
-    final_time = final_time + my_time;
+if ~isempty(starts)
+    for i = 1:length(starts)
+        my_time = seconds(traj1.Time(ends(i)) - traj1.Time(starts(i)));
+        final_time = final_time + my_time;
+    end
 end

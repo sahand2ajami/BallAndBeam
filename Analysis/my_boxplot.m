@@ -14,10 +14,10 @@ n_group2 = length(y2);
 n_group3 = length(y3);
 n_group4 = length(y4);
 
-x1_loc_boxchart = (x_centreloc - 2*bias) * ones(1, n_group1);
-x2_loc_boxchart = (x_centreloc - bias) * ones(1, n_group2);
-x3_loc_boxchart = (x_centreloc + bias) * ones(1, n_group3);
-x4_loc_boxchart = (x_centreloc + 2*bias) * ones(1, n_group4);
+x1_loc_boxchart = (x_centreloc - 1.5*bias) * ones(1, n_group1);
+x2_loc_boxchart = (x_centreloc - 0.5*bias) * ones(1, n_group2);
+x3_loc_boxchart = (x_centreloc + 0.5*bias) * ones(1, n_group3);
+x4_loc_boxchart = (x_centreloc + 1.5*bias) * ones(1, n_group4);
 
 % Add jitter to x-coordinates for scatter plot
 jitter_amount = 0.1; % adjust this value as needed for your data scale
