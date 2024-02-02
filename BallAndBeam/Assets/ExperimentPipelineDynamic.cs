@@ -10,6 +10,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public GameObject ball;
     public TextMeshPro tmp;
 
+    public TextMeshPro go_plane;
     public Logger logger;
 
     public Communications communications;
@@ -17,13 +18,16 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public GameObject left_hand;
     public GameObject right_hand;
 
+    public GameObject horizontal_beam;
     public GameObject leftHandModelRenderer;
     public GameObject rightHandModelRenderer;
+    public GameObject lamp;
     // time duration constants for commencing experiment
     public float initialWait = 5.0f;
     public float interPhaseWait = 30.0f;
     public float interTrialWait = 60.0f;
 
+    public float ready_time = 3.0f;
     // misc variables for state tracking
     public float startTime = 0f;
     public enum ExperimentStateDynamic 
@@ -54,6 +58,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         state = ExperimentStateDynamic.NotStarted;
         trialState = TrialStateDynamic.TrialStart;
         ball.GetComponent<Rigidbody>().isKinematic = true;
+        
     }
 
     // Update is called once per frame
@@ -129,7 +134,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         int fail = ball.GetComponent<BalanceDynamic>().fail;
         int score = ball.GetComponent<BalanceDynamic>().success;
         int remaining = trialsPerPhase - fail - score;
-        tmp.text = "Fail: " + fail + " | " + "Score: " + score + " | " + "Remaining: " + remaining;
+        // tmp.text = "Fail: " + fail + " | " + "Score: " + score + " | " + "Remaining: " + remaining;
+        tmp.text = "Remaining: " + remaining;
         
         // check if between trials
         switch (trialState)
@@ -166,11 +172,11 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         // display a countdown for resting
         float remainingTime = interPhaseWait - (Time.time - startTime);
         tmp.text = "Rest for " + remainingTime.ToString("n2") + "s";
+        
         if (remainingTime <= 0.0f)
         {
             phase += 1;
             state = ExperimentStateDynamic.StartingPhase;
-
         }
     }
 
@@ -186,13 +192,36 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         // begin trial in initialWait seconds
         float remainingTime = interTrialWait - (Time.time - startTime); 
         tmp.text = "Next trial in " + remainingTime.ToString("n2") + "s";
+        if (remainingTime <= ready_time)
+        {
+            // Get the Renderer component from the new cube
+            var lampRenderer = lamp.GetComponent<Renderer>();
+            // Call SetColor using the shader property name "_Color" and setting the color to red
+            lampRenderer.material.SetColor("_Color", Color.yellow);
+
+            go_plane.text = "Ready";
+        }
         if (remainingTime <= 0.0f) 
         {
             trialState = TrialStateDynamic.TrialRunning;
             ball.GetComponent<Rigidbody>().isKinematic = false;
             ball.GetComponent<BalanceDynamic>().targetMovementStartTime = Time.time;
-            // communications.Log(communications.serial_port, "c"); //Start recording
+
+            // SAHAND: CHECK THIS
+            // Start recording EMG
+            communications.Log(communications.serial_port, "c"); //Start recording
+
+            // Get the Renderer component from the new cube
+            var lampRenderer = lamp.GetComponent<Renderer>();
+
+            // Call SetColor using the shader property name "_Color" and setting the color to red
+            lampRenderer.material.SetColor("_Color", Color.green);
+
+            go_plane.text = "Go";
+
         }
+
+
         
     }
 
@@ -210,17 +239,33 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         logger.WriteCSVPositions("left_hand", left_hand.transform.position, trialNumber, phase);
         logger.WriteCSVPositions("right_hand", right_hand.transform.position, trialNumber, phase);
         logger.WriteCSVTime("time", Time.time - startTime, trialNumber, phase);
+
+        // Get the Renderer component from the new cube
+            var lampRenderer = lamp.GetComponent<Renderer>();
+
+            // Call SetColor using the shader property name "_Color" and setting the color to red
+            lampRenderer.material.SetColor("_Color", Color.green);
+
+            go_plane.text = "Go";
     }
 
     void TrialEnd(int trialNumber)
     {
         // freeze ball and switch states
-        // communications.Log(communications.serial_port, "b");
+        // SAHAND: CHECK THIS
+        communications.Log(communications.serial_port, "b");
         ball.GetComponent<Rigidbody>().isKinematic = true;
         trialState = TrialStateDynamic.TrialStart;
         // start timer
         startTime = Time.time;
         logger.WriteCSVList("trackingTimes", ball.GetComponent<BalanceDynamic>().trackingTimeList[^1], trialNumber, phase);
 
+        // Get the Renderer component from the new cube
+        var lampRenderer = lamp.GetComponent<Renderer>();
+
+        // Call SetColor using the shader property name "_Color" and setting the color to red
+        lampRenderer.material.SetColor("_Color", Color.red);
+
+        go_plane.text = "Stop";
     }
 }

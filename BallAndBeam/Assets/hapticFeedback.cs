@@ -104,10 +104,12 @@ public class hapticFeedback : MonoBehaviour
         {
             CheckForHoldingBeam();
             UpdateStaticHands();
+
         }
 
         else
         {
+
             // disable the cube table
             if (tableIsActive)
             {
@@ -157,12 +159,16 @@ public class hapticFeedback : MonoBehaviour
         float distanceBetweenAnchors = Vector3.Distance(leftAnchor.transform.position, rightAnchor.transform.position);
         // 2. distance between the left anchor and the ball
         float distanceBetweenLeftAndBall = Vector3.Distance(leftAnchor.transform.position, ball.transform.position);
+        float distanceBetweenRightAndBall = Vector3.Distance(rightAnchor.transform.position, ball.transform.position);
+
         // 3. distance between the right anchor and the ball
-        float distanceBetweenRightAndBall = distanceBetweenAnchors - distanceBetweenLeftAndBall;
+        float vibrationCoefLeftAndBall = distanceBetweenAnchors - distanceBetweenLeftAndBall;
+        float vibrationCoefRightAndBall = distanceBetweenAnchors - distanceBetweenRightAndBall;
+
         // 4. on the left hand: Right-Ball Distance / Left-Right Distance * ALPHA
-        leftAmplitude = Mathf.Log(distanceBetweenRightAndBall + 1) * amplitudeFactor;
+        leftAmplitude = Mathf.Log(vibrationCoefLeftAndBall + 1) * amplitudeFactor;
         // 5. on the right hand: Left-Ball Distance / Left-Right Distance * ALPHA
-        rightAmplitude = Mathf.Log(distanceBetweenLeftAndBall + 1) * amplitudeFactor; 
+        rightAmplitude = Mathf.Log(vibrationCoefRightAndBall + 1) * amplitudeFactor; 
         // first, render haptics for the left hand
         hapticAction.Execute(secondsFromNow, duration, frequency, leftAmplitude, SteamVR_Input_Sources.LeftHand);
         // then, render haptics for the right hand

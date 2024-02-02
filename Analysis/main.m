@@ -5,7 +5,7 @@ format compact
 %% Convert .csv files to .mat format
 
 start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
-num_participants = 2;
+num_participants = 4;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
 % n_phase = 4; % this is the number of experiment phases that the participants had
@@ -42,7 +42,7 @@ Metrics = struct();
 participants_list = fieldnames(SubjectData);
 
 % These need to be checked before the final version of the code. 
-target_boundary = 0.03;
+target_boundary = 0.5;
 occluder_boundary = 0.05;
 
 % variables to calculate mean and std of different metrics.
@@ -138,9 +138,7 @@ for i = 1:size(participants_list, 1)
             % each participant over their trials
             jerk_metric_left_meanstd_trialwise(k,1) = jerk_metric_left;
             speed_metric_left_meanstd_trialwise(k,1) = speed_metric_left;
-            if i == 1 && j == 1
-            speed_metric_left_meanstd_trialwise
-            end
+            
             % Analyze the right hand trajectory and extract speed and jerk
             % metrics for smoothness
             [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
@@ -242,68 +240,91 @@ for i = 1:size(participants_list, 1)
 end
 
 %% These are the plots to observe the groups trends
-close all
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array(1), ...
-    Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array(1), ...
-    Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array(1), ...
-    Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array(1), ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target");
+% close all
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array(1), ...
+%     Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array(1), ...
+%     Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array(1), ...
+%     Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array(1), ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target");
+% %%
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetBehindOccluderTime.array, ...
+%     Metrics_overparticipants.(phases_list{2}).BallOnTargetBehindOccluderTime.array, ...
+%     Metrics_overparticipants.(phases_list{3}).BallOnTargetBehindOccluderTime.array, ...
+%     Metrics_overparticipants.(phases_list{4}).BallOnTargetBehindOccluderTime.array, ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target Behind the Occluder");
 %%
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetBehindOccluderTime.array, ...
-    Metrics_overparticipants.(phases_list{2}).BallOnTargetBehindOccluderTime.array, ...
-    Metrics_overparticipants.(phases_list{3}).BallOnTargetBehindOccluderTime.array, ...
-    Metrics_overparticipants.(phases_list{4}).BallOnTargetBehindOccluderTime.array, ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target Behind the Occluder");
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.left.array(1), ...
+%     Metrics_overparticipants.(phases_list{2}).Smoothness.speed.left.array(1), ...
+%     Metrics_overparticipants.(phases_list{3}).Smoothness.speed.left.array(1), ...
+%     Metrics_overparticipants.(phases_list{4}).Smoothness.speed.left.array(1), ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Left) - P1");
+%     
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.array(1), ...
+%     Metrics_overparticipants.(phases_list{2}).Smoothness.speed.right.array(1), ...
+%     Metrics_overparticipants.(phases_list{3}).Smoothness.speed.right.array(1), ...
+%     Metrics_overparticipants.(phases_list{4}).Smoothness.speed.right.array(1), ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Right) - P1");
 %%
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.left.array(1), ...
-    Metrics_overparticipants.(phases_list{2}).Smoothness.speed.left.array(1), ...
-    Metrics_overparticipants.(phases_list{3}).Smoothness.speed.left.array(1), ...
-    Metrics_overparticipants.(phases_list{4}).Smoothness.speed.left.array(1), ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Left) - P1");
-    
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.array(1), ...
-    Metrics_overparticipants.(phases_list{2}).Smoothness.speed.right.array(1), ...
-    Metrics_overparticipants.(phases_list{3}).Smoothness.speed.right.array(1), ...
-    Metrics_overparticipants.(phases_list{4}).Smoothness.speed.right.array(1), ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Right) - P1");
-%%
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.left.array(2), ...
-    Metrics_overparticipants.(phases_list{2}).Smoothness.speed.left.array(2), ...
-    Metrics_overparticipants.(phases_list{3}).Smoothness.speed.left.array(2), ...
-    Metrics_overparticipants.(phases_list{4}).Smoothness.speed.left.array(2), ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Left) - P2");
-    
-figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.array(2), ...
-    Metrics_overparticipants.(phases_list{2}).Smoothness.speed.right.array(2), ...
-    Metrics_overparticipants.(phases_list{3}).Smoothness.speed.right.array(2), ...
-    Metrics_overparticipants.(phases_list{4}).Smoothness.speed.right.array(2), ...
-    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Right) - P2");
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.left.array(2), ...
+%     Metrics_overparticipants.(phases_list{2}).Smoothness.speed.left.array(2), ...
+%     Metrics_overparticipants.(phases_list{3}).Smoothness.speed.left.array(2), ...
+%     Metrics_overparticipants.(phases_list{4}).Smoothness.speed.left.array(2), ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Left) - P2");
+%     
+% figure
+% my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).Smoothness.speed.right.array(2), ...
+%     Metrics_overparticipants.(phases_list{2}).Smoothness.speed.right.array(2), ...
+%     Metrics_overparticipants.(phases_list{3}).Smoothness.speed.right.array(2), ...
+%     Metrics_overparticipants.(phases_list{4}).Smoothness.speed.right.array(2), ...
+%     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Right) - P2");
 
 %%
-close all
-plot(Metrics.phase1.S_03.BallOnTargetTime.arrayovertrials)
-hold on
-plot(Metrics.phase2.S_03.BallOnTargetTime.arrayovertrials)
-plot(Metrics.phase3.S_03.BallOnTargetTime.arrayovertrials)
-plot(Metrics.phase4.S_03.BallOnTargetTime.arrayovertrials)
-title("Ball on Target time - P1 - ")
-legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
-
+% figure
+% plot(Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials)
+% hold on
+% % plot(Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials)
+% % plot(Metrics.phase3.S_05.BallOnTargetTime.arrayovertrials)
+% % plot(Metrics.phase4.S_05.BallOnTargetTime.arrayovertrials)
+% title("Ball on Target time - P1 - ")
+% % legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
+% 
+% 
+% % close all
+% figure
+% plot(Metrics.phase1.S_06.BallOnTargetTime.arrayovertrials)
+% hold on
+% % plot(Metrics.phase2.S_06.BallOnTargetTime.arrayovertrials)
+% % plot(Metrics.phase3.S_06.BallOnTargetTime.arrayovertrials)
+% % plot(Metrics.phase4.S_06.BallOnTargetTime.arrayovertrials)
+% title("Ball on Target time - P2 - ")
+% % legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
 %%
 close all
-plot(Metrics.phase1.S_04.BallOnTargetTime.arrayovertrials)
-hold on
-plot(Metrics.phase2.S_04.BallOnTargetTime.arrayovertrials)
-plot(Metrics.phase3.S_04.BallOnTargetTime.arrayovertrials)
-plot(Metrics.phase4.S_04.BallOnTargetTime.arrayovertrials)
-title("Ball on Target time - P2 - ")
-legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
+window = 10;
+
+first100 = Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials;
+second100 = Metrics.phase1.S_06.BallOnTargetTime.arrayovertrials;
+
+learning_curve = [first100; second100];
+learning_curve_smoothed_mean = movmean(learning_curve, window);
+learning_curve_smoothed_std = abs(movstd(learning_curve, window));
+% Calculate the upper and lower bounds
+upper_bound = learning_curve_smoothed_mean + learning_curve_smoothed_std;
+lower_bound = learning_curve_smoothed_mean - learning_curve_smoothed_std;
+
+close all
+% x = 1:length(learning_curve_smoothed_mean);
+% x = x';
+% fill([x, fliplr(x)], [upper_bound, fliplr(lower_bound)], 'b', 'FaceAlpha', 0.1, 'EdgeColor', 'none'); % 'b' is blue, adjust color as needed
+% hold on
+plot(learning_curve_smoothed_mean, 'b', 'LineWidth', 2)
+% hold on
+
 
 
 
