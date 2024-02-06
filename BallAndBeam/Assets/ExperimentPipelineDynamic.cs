@@ -89,6 +89,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
 
     void NotStarted()
     {
+        // communications.Log(communications.serial_port, "b"); //End recording
         if (beam.GetComponent<hapticFeedback>().leftHandIsHoldingBeam && beam.GetComponent<hapticFeedback>().rightHandIsHoldingBeam) 
         {
             state = ExperimentStateDynamic.StartingPhase;
@@ -99,6 +100,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
 
     void StartingPhase()
     {
+        // communications.Log(communications.serial_port, "c"); //Start recording
         // begin trial in initialWait seconds
         float remainingTime = initialWait - (Time.time - startTime); 
         tmp.text = "Beginning phase " + phase + " in " + remainingTime.ToString("n2") + "s";
@@ -125,11 +127,13 @@ public class ExperimentPipelineDynamic : MonoBehaviour
             trialState = TrialStateDynamic.TrialRunning;
             ball.GetComponent<Rigidbody>().isKinematic = false;
             ball.GetComponent<BalanceDynamic>().targetMovementStartTime = Time.time;
+            // communications.Log(communications.serial_port, "b"); //End recording
         }
     }
 
     void RunningPhase()
     {
+        
         // display the current score
         int fail = ball.GetComponent<BalanceDynamic>().fail;
         int score = ball.GetComponent<BalanceDynamic>().success;
@@ -200,6 +204,11 @@ public class ExperimentPipelineDynamic : MonoBehaviour
             lampRenderer.material.SetColor("_Color", Color.yellow);
 
             go_plane.text = "Ready";
+            horizontal_beam.SetActive(true);
+            // horizontal_beam.transform.position.y = beam.transform.position.y;
+            horizontal_beam.transform.position = new Vector3 (beam.transform.position.x, beam.transform.position.y, beam.transform.position.z);
+            Debug.Log("Ready: " + horizontal_beam.transform.position);
+            // horizontal_beam.transform.position = new Vector3(horizontal_beam.transform.position.x - 2*1e6f, horizontal_beam.transform.position.y, horizontal_beam.transform.position.z);
         }
         if (remainingTime <= 0.0f) 
         {
@@ -218,11 +227,10 @@ public class ExperimentPipelineDynamic : MonoBehaviour
             lampRenderer.material.SetColor("_Color", Color.green);
 
             go_plane.text = "Go";
-
+            // Debug.Log("Go: " + horizontal_beam.transform.position);
+            horizontal_beam.SetActive(false);
+            // horizontal_beam.transform.position = new Vector3(horizontal_beam.transform.position.x +1e6f, horizontal_beam.transform.position.y, horizontal_beam.transform.position.z);
         }
-
-
-        
     }
 
     void TrialRunning(int trialNumber)
@@ -247,6 +255,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
             lampRenderer.material.SetColor("_Color", Color.green);
 
             go_plane.text = "Go";
+            horizontal_beam.SetActive(false);
+            Debug.Log("Go: " + horizontal_beam.transform.position);
     }
 
     void TrialEnd(int trialNumber)
@@ -267,5 +277,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         lampRenderer.material.SetColor("_Color", Color.red);
 
         go_plane.text = "Stop";
+        // horizontal_beam.transform.position = new Vector3(horizontal_beam.transform.position.x + 1e6f, horizontal_beam.transform.position.y, horizontal_beam.transform.position.z
+        Debug.Log("Stop: " + horizontal_beam.transform.position);
     }
 }

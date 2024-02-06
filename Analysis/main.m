@@ -305,7 +305,7 @@ end
 % % legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
 %%
 close all
-window = 10;
+window = 11;
 
 first100 = Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials;
 second100 = Metrics.phase1.S_06.BallOnTargetTime.arrayovertrials;
