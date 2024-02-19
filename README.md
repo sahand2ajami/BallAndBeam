@@ -14,7 +14,7 @@ Ball and Beam is a 3D neuro-rehabilitation game where players control the rotati
 ### Installation
 
 1. Clone the repository:
-??????
+[https://github.com/sahand2ajami/BallAndBeam.git](https://github.com/sahand2ajami/BallAndBeam.git)
 2. Open the project in Unity by selecting `Open` and navigating to the cloned project folder.
 
 ### Unity Packages
