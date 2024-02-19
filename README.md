@@ -52,5 +52,27 @@ You can install these packages via the Unity Package Manager by navigating to `W
 
 ## Usage
 
-- Pull the VR controller triggers to start the trials
+- Pull the VR controller triggers to start the trials.
+
+# User Study Analysis
+This folder contains the code used to analyze the user study for the ball and beam system. The analysis includes the kinematic data of the hand and the EMG analysis for motor learning purposes.
+**Please note that the 'data' folder will be shared after the study is published.**
+
+### Prerequisites
+Before running the analysis scripts, ensure that you have the following software and libraries installed:
+
+- MATLAB R2022b or later
+
+### File Structure
+- `csv2mat.m` and `csv22mat.m` : Script for converting the .csv files of kinematic data into .mat files.
+- `csvEMGmat.m`: Script for converting the .csv files of the EMG data into .mat files.
+- `mat2struct.m`: Script for combining all the .mat files into a structure.
+- `emg_preprocess.m`: Script for preprocessing the EMG signals.
+- `emg_metric_calculator.m`: Script for analyzing the EMG signals and extract features from them.
+- `traj_analysis.m`: Script for analyzing the trajectory of the hand.
+- `ball_on_target_time_extractor.m`: Script for calculating the time that the ball stayed on the target for each trial.
+- `main.m`: Script for the pipeline analysis.
+
+### Usage
+You only need to run `main.m` for the analysis pipeline. 
 
