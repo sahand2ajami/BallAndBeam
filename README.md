@@ -76,3 +76,6 @@ Before running the analysis scripts, ensure that you have the following software
 ### Usage
 You only need to run `main.m` for the analysis pipeline. 
 
+# Questions
+If you have any questions about the project, feel free to reach out. You can send an email to [sahand.ajami@gmail.com](mailto:sahand.ajami@gmail.com), and we'll get back to you as soon as possible.
+
