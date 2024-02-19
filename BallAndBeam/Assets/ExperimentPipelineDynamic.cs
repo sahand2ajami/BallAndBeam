@@ -22,6 +22,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public GameObject leftHandModelRenderer;
     public GameObject rightHandModelRenderer;
     public GameObject lamp;
+
+    private AudioSource my_beep;
     // time duration constants for commencing experiment
     public float initialWait = 5.0f;
     public float interPhaseWait = 30.0f;
@@ -30,6 +32,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
     public float ready_time = 3.0f;
     // misc variables for state tracking
     public float startTime = 0f;
+
+    
     public enum ExperimentStateDynamic 
     {
         NotStarted,
@@ -58,6 +62,8 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         state = ExperimentStateDynamic.NotStarted;
         trialState = TrialStateDynamic.TrialStart;
         ball.GetComponent<Rigidbody>().isKinematic = true;
+
+        // my_beep = my_beep.GetComponent<AudioSource>();
         
     }
 
@@ -198,10 +204,13 @@ public class ExperimentPipelineDynamic : MonoBehaviour
         tmp.text = "Next trial in " + remainingTime.ToString("n2") + "s";
         if (remainingTime <= ready_time)
         {
+            
             // Get the Renderer component from the new cube
             var lampRenderer = lamp.GetComponent<Renderer>();
             // Call SetColor using the shader property name "_Color" and setting the color to red
             lampRenderer.material.SetColor("_Color", Color.yellow);
+            // my_beep.Play();
+            
 
             go_plane.text = "Ready";
             horizontal_beam.SetActive(true);
@@ -275,7 +284,7 @@ public class ExperimentPipelineDynamic : MonoBehaviour
 
         // Call SetColor using the shader property name "_Color" and setting the color to red
         lampRenderer.material.SetColor("_Color", Color.red);
-
+        
         go_plane.text = "Stop";
         // horizontal_beam.transform.position = new Vector3(horizontal_beam.transform.position.x + 1e6f, horizontal_beam.transform.position.y, horizontal_beam.transform.position.z
         Debug.Log("Stop: " + horizontal_beam.transform.position);

@@ -5,17 +5,18 @@ format compact
 %% Convert .csv files to .mat format
 
 start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
-num_participants = 4;
+num_participants = 1;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
 % n_phase = 4; % this is the number of experiment phases that the participants had
 
 % This is where each participants' data are stored for this project
-cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot')
+cd ('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot3')
 
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
+% UNCOMMENT THIS LINE FOR THE FIRST TIME USING IT
 csv2mat(start, stop)
 %%
 % folderName_phase = dir('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot\02 - Sahand')
@@ -55,188 +56,238 @@ for i = 1:size(participants_list, 1)
     
     % This loops in the phases
     for j = 1:size(phases_list, 1)
-        trials = SubjectData.(participants_list{i}).(phases_list{j});
-        trials_list = fieldnames(trials);
-        % This loops in the trials
-        for k = 1:size(trials_list, 1)
-
-            % Extract the trajectory of the ball
-            ball_trajectory = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X;
-            
-            % Extract the time of each trial
-            time_array = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).time.time;
-            time_array = time_array - time_array(1);
-            
-            %%% Ball on target overall %%%
-            % Calculate the overall time that the ball stayed on the target
-            % by checking the difference between the trajctory of the ball
-            % and the target
-            ball_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
-            target_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).target.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
-            
-%             difference = ball_data.X - target_data.X;
-%             ball_on_target = ball_data((abs(difference) < threshold), :);
-
-            % Extracts the time that the ball was on the target in each
-            % trial
-            ball_on_target_time = ball_on_target_time_extractor(ball_data, target_data, target_boundary);
-
-            ball_on_target_time_meanstd_trialwise(k,1) = ball_on_target_time;
-            % Save the over all time trial by trial
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.Trials.(trials_list{k}) = ball_on_target_time;
-
-            %%% Ball on target (behind the occluder version) %%%
-            % Calculate the overall time that the ball stayed on the target
-            % behind the occluder
-            % by checking the difference between the trajctory of the ball
-            % and the target behind the occluder
-            occluder_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).occluder.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
-            occluder_data = mean(occluder_data.X);
-
-            difference = ball_data.X - target_data.X;
-            ball_on_target = ball_data((abs(difference) < target_boundary), :);
-
-%             target_boundary
-            ball_on_target_behind_occluder_time = ball_on_target_behind_occluder_time_extractor(ball_data,target_data, occluder_data, target_boundary, occluder_boundary);
-%             ball_on_target_behindoccluder_time = time_extractor(abs(difference), occluder_data, occluder_boundary)
-%             difference = ball_on_target.X - occluder_data;
-%             ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
-%             if isempty(ball_on_target_behind_occluder)
-%                 ball_on_target_behind_occluder_time = 0;
-%                 ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = 0;
-%             else
-%                 ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
-                ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = ball_on_target_behind_occluder_time;
-%             end
-
-            % Save the over all time trial by trial
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Trials.(trials_list{k}) = ball_on_target_behind_occluder_time;
-        
-            %%% Smoothness metric %%%
-            % Extract the hand trajectories
-            left_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).left_hand;
-            right_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).right_hand;
-            
-            % Save the trajectory into time tables
-            left_hand_timetable = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
-            right_hand_timetable = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
-            
-            % Save the trajectories into Metrics variable
-            Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = left_hand_timetable;
-            Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = right_hand_timetable;
-            
-            % Analyze the left hand trajectory and extract speed and jerk
-            % metrics for smoothness
-            [jerk_metric_left, speed_metric_left] = traj_analysis(left_hand_timetable);
-            
-            % Save the left hand smoothness metrics into Metrics variable
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.Trials.(trials_list{k}) = jerk_metric_left;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.Trials.(trials_list{k}) = speed_metric_left;
-            
-            % Append the left hand smoothness metrics into _meanstd
-            % variable which is used later to calculate the mean and std of
-            % each participant over their trials
-            jerk_metric_left_meanstd_trialwise(k,1) = jerk_metric_left;
-            speed_metric_left_meanstd_trialwise(k,1) = speed_metric_left;
-            
-            % Analyze the right hand trajectory and extract speed and jerk
-            % metrics for smoothness
-            [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
-
-            % Save the right hand smoothness metrics into Metrics variable
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.Trials.(trials_list{k}) = jerk_metric_right;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.Trials.(trials_list{k}) = speed_metric_right;
-            
-            % Append the right hand smoothness into _meanstd variable which
-            % is used later to calculate the mean and std of each
-            % participant over their trials
-            jerk_metric_right_meanstd_trialwise(k,1) = jerk_metric_right;
-            speed_metric_right_meanstd_trialwise(k,1) = speed_metric_right;
-
-            % Combine the two hands smoothness metrics by calculating
-            % different means
-            [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
-                = smoothness_combinator(jerk_metric_left, jerk_metric_right);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.rms.Trials.(trials_list{k}) = rms;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
-            
-            [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
-                = smoothness_combinator(speed_metric_left, speed_metric_right);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.rms.Trials.(trials_list{k}) = rms;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
+        if contains(phases_list{j}, "MVC")
+            mvc_raw = SubjectData.(participants_list{i}).(phases_list{j}).emg_raw;
         end
+         
+        if contains(phases_list{j}, "phase")
+            trials = SubjectData.(participants_list{i}).(phases_list{j});
+            trials_list = fieldnames(trials);
 
-        %%% Save the mean and std of over the trials from each participant
-        % The time that ball stays on the target
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd_trialwise);
+            rms_mean_array = [];
+            rms_mav_array = [];
+            % This loops in the trials
+            for k = 1:size(trials_list, 1)
+    
+                % Extract the trajectory of the ball
+                ball_trajectory = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X;
+                
+                % Extract the time of each trial
+                time_array = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).time.time;
+                time_array = time_array - time_array(1);
+                
+                %%% Ball on target overall %%%
+                % Calculate the overall time that the ball stayed on the target
+                % by checking the difference between the trajctory of the ball
+                % and the target
+                ball_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+                target_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).target.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+                
+    %             difference = ball_data.X - target_data.X;
+    %             ball_on_target = ball_data((abs(difference) < threshold), :);
+    
+                % Extracts the time that the ball was on the target in each
+                % trial
+                ball_on_target_time = ball_on_target_time_extractor(ball_data, target_data, target_boundary);
+    
+                ball_on_target_time_meanstd_trialwise(k,1) = ball_on_target_time;
+                % Save the over all time trial by trial
+                Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.Trials.(trials_list{k}) = ball_on_target_time;
+    
+                %%% Ball on target (behind the occluder version) %%%
+                % Calculate the overall time that the ball stayed on the target
+                % behind the occluder
+                % by checking the difference between the trajctory of the ball
+                % and the target behind the occluder
+                occluder_data = timetable(SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).occluder.X, 'VariableNames', {'X'}, 'RowTimes', seconds(time_array));
+                occluder_data = mean(occluder_data.X);
+    
+                difference = ball_data.X - target_data.X;
+                ball_on_target = ball_data((abs(difference) < target_boundary), :);
+    
+    %             target_boundary
+                ball_on_target_behind_occluder_time = ball_on_target_behind_occluder_time_extractor(ball_data,target_data, occluder_data, target_boundary, occluder_boundary);
+    %             ball_on_target_behindoccluder_time = time_extractor(abs(difference), occluder_data, occluder_boundary)
+    %             difference = ball_on_target.X - occluder_data;
+    %             ball_on_target_behind_occluder = ball_on_target((abs(difference) < occluder_boundary), :);
+    %             if isempty(ball_on_target_behind_occluder)
+    %                 ball_on_target_behind_occluder_time = 0;
+    %                 ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = 0;
+    %             else
+    %                 ball_on_target_behind_occluder_time = seconds(ball_on_target_behind_occluder.Time(end) - ball_on_target_behind_occluder.Time(1));
+                    ball_on_target_behind_occluder_time_meanstd_trialwise(k, 1) = ball_on_target_behind_occluder_time;
+    %             end
+    
+                % Save the over all time trial by trial
+                Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.Trials.(trials_list{k}) = ball_on_target_behind_occluder_time;
+            
+                %%% Smoothness metric %%%
+                % Extract the hand trajectories
+                left_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).left_hand;
+                right_hand = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).right_hand;
+                
+                % Save the trajectory into time tables
+                left_hand_timetable = timetable(left_hand.X, left_hand.Y, left_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+                right_hand_timetable = timetable(right_hand.X, right_hand.Y, right_hand.Z, 'VariableNames', {'X', 'Y', 'Z'}, 'RowTimes', seconds(time_array));
+                
+                % Save the trajectories into Metrics variable
+                Metrics.(phases_list{j}).(participants_list{i}).LeftHand.Trials.(trials_list{k}) = left_hand_timetable;
+                Metrics.(phases_list{j}).(participants_list{i}).RightHand.Trials.(trials_list{k}) = right_hand_timetable;
+                
+                % Analyze the left hand trajectory and extract speed and jerk
+                % metrics for smoothness
+                [jerk_metric_left, speed_metric_left] = traj_analysis(left_hand_timetable);
+                
+                % Save the left hand smoothness metrics into Metrics variable
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.Trials.(trials_list{k}) = jerk_metric_left;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.Trials.(trials_list{k}) = speed_metric_left;
+                
+                % Append the left hand smoothness metrics into _meanstd
+                % variable which is used later to calculate the mean and std of
+                % each participant over their trials
+                jerk_metric_left_meanstd_trialwise(k,1) = jerk_metric_left;
+                speed_metric_left_meanstd_trialwise(k,1) = speed_metric_left;
+                
+                % Analyze the right hand trajectory and extract speed and jerk
+                % metrics for smoothness
+                [jerk_metric_right, speed_metric_right] = traj_analysis(right_hand_timetable);
+    
+                % Save the right hand smoothness metrics into Metrics variable
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.Trials.(trials_list{k}) = jerk_metric_right;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.Trials.(trials_list{k}) = speed_metric_right;
+                
+                % Append the right hand smoothness into _meanstd variable which
+                % is used later to calculate the mean and std of each
+                % participant over their trials
+                jerk_metric_right_meanstd_trialwise(k,1) = jerk_metric_right;
+                speed_metric_right_meanstd_trialwise(k,1) = speed_metric_right;
+    
+                % Combine the two hands smoothness metrics by calculating
+                % different means
+                [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
+                    = smoothness_combinator(jerk_metric_left, jerk_metric_right);
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.rms.Trials.(trials_list{k}) = rms;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
+                
+                [arithmetic_mean, geometric_mean, rms, harmonic_mean, vector_sum] ...
+                    = smoothness_combinator(speed_metric_left, speed_metric_right);
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.arithmetic_mean.Trials.(trials_list{k}) = arithmetic_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.geometric_mean.Trials.(trials_list{k}) = geometric_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.rms.Trials.(trials_list{k}) = rms;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
+                Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
 
-        % The time that ball stays on the target while behind the occluder
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.arrayovertrials = ball_on_target_behind_occluder_time_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.median = median(ball_on_target_behind_occluder_time_meanstd_trialwise);
+                
+                % Include EMG signals here 
+                if k > 1
+                    trials = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k});
+                    exists = isfield(trials, 'emg_raw');
+                    if exists
+                        emg_table_raw = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).emg_raw;
+                        mvc_table_raw = SubjectData.(participants_list{i}).MVC.emg_raw;
+                        
+                        emg_table_preprocessed = table();
+                        emg_table_rms = table();
+                        emg_table_mav = table();
+                        
+                        for kk = 1:width(emg_table_raw)
+                            emg_preprocessed{:, kk} = emg_preprocess(emg_table_raw{:, kk}, mvc_table_raw{:, kk});
+                            emg_name = ['EMG', num2str(kk)];
+                            emg_table_preprocessed.(emg_name) = emg_preprocessed{:, kk};
+                            
+                            [rmsValue{kk}, mavValue{kk}] = emg_metric_calculator(emg_preprocessed{:, kk});
+                            emg_table_rms.(emg_name) = rmsValue{kk};
+                            emg_table_mav.(emg_name) = mavValue{kk};
+                            
+                            rms_mean_array(k-1, kk) = rmsValue{kk};
+                            mav_mean_array(k-1, kk) = mavValue{kk};
+                        end
+                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).pre_processed = emg_table_preprocessed;
+                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).rms = emg_table_rms;
+                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).mav = emg_table_mav;
+                    end
+                end
+            end
+
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.array = rms_mean_array;
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.mean_over_trials = mean(rms_mean_array);
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.std_over_trials = std(rms_mean_array);
+
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.array = mav_mean_array;
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.mean_over_trials = mean(mav_mean_array);
+            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.std_over_trials = std(mav_mean_array);
+
+            
+            %%% Save the mean and std of over the trials from each participant
+            % The time that ball stays on the target
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd_trialwise);
+    
+            % The time that ball stays on the target while behind the occluder
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.arrayovertrials = ball_on_target_behind_occluder_time_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.median = median(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            
+            % jerk metric of the left hand
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.arrayovertrials = jerk_metric_left_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd_trialwise);
+    
+            % Jerk metric of the right hand
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.arrayovertrials = jerk_metric_right_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd_trialwise);
+    
+            % Speed metric of the left hand
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.arrayovertrials = speed_metric_left_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd_trialwise);
+    
+            % Speed metric of the right hand
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.arrayovertrials = speed_metric_right_meanstd_trialwise;
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd_trialwise);
+    
+            % Append the mean of each metric into an array so that they can be
+            % used in calculation of the mean across participants
+            ball_on_target_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean;
+            ball_on_target_behind_occluder_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean;
+            jerk_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean;
+            jerk_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean;
+            speed_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean;
+            speed_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean;
+    
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.array = ball_on_target_time_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.mean = mean(ball_on_target_time_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.std = std(ball_on_target_time_mean_participantwise(:, j));
+    
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.array = ball_on_target_behind_occluder_time_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
         
-        % jerk metric of the left hand
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.arrayovertrials = jerk_metric_left_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd_trialwise);
-
-        % Jerk metric of the right hand
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.arrayovertrials = jerk_metric_right_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd_trialwise);
-
-        % Speed metric of the left hand
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.arrayovertrials = speed_metric_left_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd_trialwise);
-
-        % Speed metric of the right hand
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.arrayovertrials = speed_metric_right_meanstd_trialwise;
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd_trialwise);
-        Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd_trialwise);
-
-        % Append the mean of each metric into an array so that they can be
-        % used in calculation of the mean across participants
-        ball_on_target_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean;
-        ball_on_target_behind_occluder_time_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean;
-        jerk_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean;
-        jerk_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean;
-        speed_metric_left_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean;
-        speed_metric_right_mean_participantwise(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean;
-
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.array = ball_on_target_time_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.mean = mean(ball_on_target_time_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetTime.std = std(ball_on_target_time_mean_participantwise(:, j));
-
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.array = ball_on_target_behind_occluder_time_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_mean_participantwise(:, j));
-    
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.array = jerk_metric_left_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.mean = mean(jerk_metric_left_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.std = std(jerk_metric_left_mean_participantwise(:, j));
-    
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.array = jerk_metric_right_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.mean = mean(jerk_metric_right_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.std = std(jerk_metric_right_mean_participantwise(:, j));
-    
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.array = speed_metric_left_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.mean = mean(speed_metric_left_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.std = std(speed_metric_left_mean_participantwise(:, j));
-    
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise(:, j);
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise(:, j));
-        Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.array = jerk_metric_left_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.mean = mean(jerk_metric_left_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.left.std = std(jerk_metric_left_mean_participantwise(:, j));
+        
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.array = jerk_metric_right_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.mean = mean(jerk_metric_right_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).Smoothness.jerk.right.std = std(jerk_metric_right_mean_participantwise(:, j));
+        
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.array = speed_metric_left_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.mean = mean(speed_metric_left_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.left.std = std(speed_metric_left_mean_participantwise(:, j));
+        
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise(:, j);
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise(:, j));
+            Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise(:, j));
+        end
     end
+
 end
 
 %% These are the plots to observe the groups trends
@@ -303,34 +354,29 @@ end
 % % plot(Metrics.phase4.S_06.BallOnTargetTime.arrayovertrials)
 % title("Ball on Target time - P2 - ")
 % % legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
-%%
-close all
-window = 11;
+%% This is for Chalik's learning curve
+% close all
+% window = 11;
+% 
+% first100 = Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials;
+% second100 = Metrics.phase1.S_06.BallOnTargetTime.arrayovertrials;
+% 
+% learning_curve = [first100; second100];
+% learning_curve_smoothed_mean = movmean(learning_curve, window);
+% learning_curve_smoothed_std = abs(movstd(learning_curve, window));
+% % Calculate the upper and lower bounds
+% upper_bound = learning_curve_smoothed_mean + learning_curve_smoothed_std;
+% lower_bound = learning_curve_smoothed_mean - learning_curve_smoothed_std;
+% 
+% close all
+% % x = 1:length(learning_curve_smoothed_mean);
+% % x = x';
+% % fill([x, fliplr(x)], [upper_bound, fliplr(lower_bound)], 'b', 'FaceAlpha', 0.1, 'EdgeColor', 'none'); % 'b' is blue, adjust color as needed
+% % hold on
+% plot(learning_curve_smoothed_mean, 'b', 'LineWidth', 2)
+% % hold on
 
-first100 = Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials;
-second100 = Metrics.phase1.S_06.BallOnTargetTime.arrayovertrials;
-
-learning_curve = [first100; second100];
-learning_curve_smoothed_mean = movmean(learning_curve, window);
-learning_curve_smoothed_std = abs(movstd(learning_curve, window));
-% Calculate the upper and lower bounds
-upper_bound = learning_curve_smoothed_mean + learning_curve_smoothed_std;
-lower_bound = learning_curve_smoothed_mean - learning_curve_smoothed_std;
-
-close all
-% x = 1:length(learning_curve_smoothed_mean);
-% x = x';
-% fill([x, fliplr(x)], [upper_bound, fliplr(lower_bound)], 'b', 'FaceAlpha', 0.1, 'EdgeColor', 'none'); % 'b' is blue, adjust color as needed
-% hold on
-plot(learning_curve_smoothed_mean, 'b', 'LineWidth', 2)
-% hold on
-
-
-
-
-
-
-
+%% EMG part
 
 
 

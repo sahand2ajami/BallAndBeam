@@ -1,0 +1,40 @@
+function pre_processed_emg = emg_preprocess(raw_emg, raw_MVC)
+% EMG_PREPROCESS Summary of this function goes here
+% Detailed explanation goes here
+
+% Sampling frequency provided by delsys trigno sensors
+fs = 2000;
+
+% Lower and higher band frequencies for filtering
+lower_band_frequency = 20;
+higher_band_frequency = 500;
+window_length = 75;
+
+%% Create the filter
+% Butterworth filter
+[b, a] = butter(4, [lower_band_frequency, higher_band_frequency]/(fs/2), 'bandpass');
+
+%% Band pass filter
+% Raw emg signal 
+emg_f = filtfilt(b, a, raw_emg);
+% Raw MVC signal
+mvc_f = filtfilt(b, a, raw_MVC);
+
+%% remove the mean (offset) and rectify
+emg_r = abs(detrend(emg_f));
+mvc_r = abs(detrend(mvc_f));
+
+%% calculate moving root-mean-square
+emg_ma = sqrt(movmean(emg_r, round((window_length*fs)/1000)));
+mvc_ma = sqrt(movmean(mvc_r, round((window_length*fs)/1000)));
+
+%% Find the maximum voluntary contraction by MVC signal
+max_mvc = abs(max(mvc_ma));
+
+%% Normalize the emg signal
+emg_norm = emg_ma ./ max_mvc;
+
+pre_processed_emg = emg_norm;
+
+end
+

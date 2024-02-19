@@ -1,4 +1,5 @@
 function SubjectData = mat2struct(SubjectData, start, stop)
+    MVC_string = 'MVC';
 
     % with'*.' dir will read folder names only
     folderName = dir('*');
@@ -29,13 +30,38 @@ function SubjectData = mat2struct(SubjectData, start, stop)
                 for j=1:length(fileName)
                     phase_name = string(folderName_phase(k).name);
                     data_name = string(fileName(j).name(1:end-4));
-                    % load the .mat data into the data structure
-                    my_file = load(fileName(j).name);
-                    for trialnumber = 1:max(my_file.data.TrialNumber)
+                    if ~contains(data_name, MVC_string)
+                        % load the .mat data into the data structure
+                        fileName(j).name;
+                        my_file = load(fileName(j).name);
+                        for trialnumber = 1:max(my_file.data.TrialNumber)
+                            SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
+                                (phase_name).(strcat("trial", num2str(trialnumber))). ...
+                                (data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
+                        end
+                        %% FOR EMG
+                        cd('EMG')
+                        EmgFileName = dir('*.mat');
+                        if ~isempty(EmgFileName)
+                            for jj = 1:length(EmgFileName)
+                                emg_file = load(EmgFileName(jj).name);
+                                
+                                SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
+                                    (phase_name).(strcat("trial", num2str(jj))). ...
+                                    ('emg_raw') = emg_file.data;
+                            end
+                        end
+                        cd ..
+                        %% For MVC
+                    elseif contains(data_name, MVC_string)
+                        MVC_file = load(data_name);
                         SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
-                            (phase_name).(strcat("trial", num2str(trialnumber))). ...
-                            (data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
+                                    ('MVC').('emg_raw') = MVC_file.data;
+                        
+
                     end
+
+
                 end
             end
     
