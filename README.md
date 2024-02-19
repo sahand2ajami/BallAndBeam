@@ -28,6 +28,7 @@ Before running the project, ensure that the following Unity packages are install
 - Version Control
 - Visual Scripting
 - OpenVR XR Plugin
+
 and the editor packages such as:
 - JetBrains Rider Editor
 - Visual Studio Code Editor
