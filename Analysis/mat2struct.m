@@ -7,6 +7,8 @@ function SubjectData = mat2struct(SubjectData, start, stop)
     % i starts from 3 because folderName first two elements are '.' and '..'
     for i = start:stop
         % go to the folder
+        folderName = dir('*');
+%         folderName(i).name
         cd(folderName(i).name);
         folderName_phase = dir('*');
 
@@ -32,7 +34,7 @@ function SubjectData = mat2struct(SubjectData, start, stop)
                     data_name = string(fileName(j).name(1:end-4));
                     if ~contains(data_name, MVC_string)
                         % load the .mat data into the data structure
-                        fileName(j).name;
+%                         fileName(j).name
                         my_file = load(fileName(j).name);
                         for trialnumber = 1:max(my_file.data.TrialNumber)
                             SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...

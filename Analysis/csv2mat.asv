@@ -12,13 +12,14 @@ function folderName = csv2mat(start, stop)
         folderName(i).name
         cd(folderName(i).name);
         folderName_phase = dir('*');
+        folderName_phase.name
         % folderName_phase.name
         n_phase = length(folderName_phase) - 2;
 
         for k = start:start+n_phase-1
 
             if contains(folderName_phase(k).name, phase_string)
-%              folderName_phase(k).name
+             folderName_phase(k).name
                 cd(folderName_phase(k).name);
                 
                 % with'*.csv' dir will read csv files only
@@ -65,7 +66,7 @@ function folderName = csv2mat(start, stop)
 
             % Go to the folder MVC, and convert the .csv file into .mat file    
             elseif contains(folderName_phase(k).name, MVC_string) 
-%                 folderName_phase(k).name
+                folderName_phase(k).name
                 cd(folderName_phase(k).name);
 
                 % with'*.csv' dir will read csv files only

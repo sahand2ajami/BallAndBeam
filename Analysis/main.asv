@@ -17,13 +17,13 @@ cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-Balla
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
 % UNCOMMENT THIS LINE FOR THE FIRST TIME USING IT
-folderName = csv2mat(start, stop);
+% folderName = csv2mat(start, stop)
 %%
 % folderName_phase = dir('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot\02 - Sahand')
 %% Take all .mat files and integrate them in a structure file SubjectData
 cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main')
 SubjectData = struct();
-SubjectData = mat2struct(SubjectData, start, stop);
+SubjectData = mat2struct(SubjectData, start, 13);
 
 % Get the field names
 fieldNames = fieldnames(SubjectData);
@@ -43,7 +43,7 @@ Metrics = struct();
 participants_list = fieldnames(SubjectData);
 
 % These need to be checked before the final version of the code. 
-target_boundary = 0.05;
+target_boundary = 0.1;
 occluder_boundary = 0.05;
 
 % variables to calculate mean and std of different metrics.
@@ -293,10 +293,10 @@ end
 %% These are the plots to observe the groups trends
 close all
 figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array, ...
-    Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array, ...
+my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array, ...
     Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array, ...
     Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array, ...
+    Metrics_overparticipants.(phases_list{5}).BallOnTargetTime.array, ...
     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target");
 
 %%
@@ -349,40 +349,40 @@ my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetT
 close all
 figure
 
-plot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array)
-hold on
 plot(Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array)
+hold on
 plot(Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array)
 plot(Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array)
+plot(Metrics_overparticipants.(phases_list{5}).BallOnTargetTime.array)
 ylim([0, 11])
 title("Ball on Target time - P2 - ")
 legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
 %% This is for Chalik's learning curve
 % close all
-window = 3;
+window = 15;
 % 
 
 learning_curve = []
 for i = 1:size(participants_list, 1)
     phases = SubjectData.(participants_list{i});
-    phases_list = fieldnames(phases)
-    phases_list = phases_list(~contains(phases_list, "MVC"))
+    phases_list = fieldnames(phases);
+    
     % This loops in the phases
     for j = 1:size(phases_list, 1)
-%         if ~contains(phases_list{j}, "MVC")
-            learning_curve{i, j} = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials;
-%         end
+        if ~contains(phases_list{j}, "MVC")
+            learning_curve{i, j-1} = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials;
+        end
     end
 end
-
-%%
 close all
 for j = 1:size(learning_curve, 2)
     for i = 1:size(learning_curve, 1)
         learning_curve_phasebased(i, :) = learning_curve{i, j}'
+        mean_baseline = 
     end
     figure
-    learning_curve_plot(learning_curve_phasebased ./ mean(learning_curve_phasebased(:, 1:10), 2))
+    learning_curve_plot(learning_curve_phasebased ./ mean(learning_curve_phasebased(:, 1:10), 1))
+
 end
 % for j = 1:size(learning_curve, 2)
 %     for i = 1:
@@ -391,7 +391,7 @@ end
 % %         i
 % %     end
 % end
-% a = learning_curve(:, 1)
+a = learning_curve(:, 1)
 % k = 1
 % a = [];
 % for j = 1:size(learning_curve, 2)

@@ -1,0 +1,31 @@
+function [outputArg1,outputArg2] = learning_curve_plot(signal)
+% Calculate the mean and standard deviation of the signals at each sample point
+    meanSignal = mean(signal, 1);
+    stdSignal = std(signal, 0, 1);
+    
+    % Calculate the upper and lower bounds of the shaded area
+    upperBound = meanSignal + stdSignal;
+    lowerBound = meanSignal - stdSignal;
+    
+    numSamples = size(signal, 2);
+
+    % Create a vector for the x-coordinates (sample points)
+    x = 1:numSamples;
+    
+    % Ensure that the vectors are the same length
+    assert(length(x) == length(upperBound) && length(x) == length(lowerBound), 'Vectors must be the same length.');
+    
+    % Plot the shaded area for standard deviation
+    fill([x-1 fliplr(x-1)], [upperBound fliplr(lowerBound)], [0.3010 0.7450 0.9330], 'EdgeColor', 'none');
+    hold on;
+    
+    % Plot the mean signal
+    plot(x-1, meanSignal, 'b', 'LineWidth', 1.5);
+    hold off;
+    
+    xlabel('Sample');
+    ylabel('Value');
+    title('Mean and Standard Deviation of Multiple Signals');
+    legend('Std Deviation', 'Mean');
+end
+
