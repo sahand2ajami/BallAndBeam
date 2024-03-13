@@ -29,8 +29,8 @@ function data = csv22mat(path)
 
     % score data
     elseif path == "scores.csv"
-        scores_data = table(ax(:, 1), ax(:, 2), ax(:, 3), ax(:, 4), ...
-            ax(:, 5), 'VariableNames',{'X','Y','Z','TrialNumber','PhaseNumber'});
+        scores_data = table(ax(:, 3), ax(:, 4), ...
+            ax(:, 6), 'VariableNames',{'fail','TrialNumber','PhaseNumber'});
         data = scores_data;
 
     % target data

@@ -1,0 +1,69 @@
+% Pipeline to analyze the subjective responses to questionnaires
+clc; clear; close all;
+format compact
+
+% This is where each participants' data are stored for this project
+data_path = "D:\OneDrive - University of Waterloo\project_BallandBeam\data\project-BallandBeam-data\main_\questionnaires";
+cd(data_path)
+
+% Get a list of all files in the folder with the .csv extension
+csvFiles = dir(fullfile(data_path, '*.csv'));
+
+% Loop over each file in the list
+for k = 1:length(csvFiles)
+    % Get the full path of the current .csv file
+    filePath = fullfile(data_path, csvFiles(k).name);
+    k
+    
+    % Read the content of the .csv file
+    fileContent = readtable(filePath);
+    
+    % Process the content of the file as needed
+    % For example, display the first few rows of the table
+    disp(['Content of ' csvFiles(k).name ':']);
+    disp(head(fileContent))
+
+    % Embodiment
+%     [overall_ownership, overall_agency, overall_tactile] = EmbodimentCalculator(fileContent);
+%     switch k
+%         case 1
+%             w = [0, 0.5, 0.5];
+%         case 2
+%             w = [0, 0.5, 0.5];
+%         case 3
+%             w = [0.33, 0.33, 0.33];
+%         case 4
+%             w = [0.33, 0.33, 0.33];
+%     end
+
+%     embodiment(:, k) = (w(1)*overall_ownership + w(2)*overall_agency + w(3)*overall_tactile) / (sum(w));
+
+    % Embodiment
+    [overall_ownership(:, k), overall_agency(:, k), overall_tactile(:, k)] = EmbodimentCalculator(fileContent);
+    
+    [overall_TLX_score(:, k), TLX_categories(:, :, k)] = NASATLXCalculator(fileContent);
+%     end
+%     overall_ownership(:, k)
+    embodiment(:, k) = (w(1)*overall_ownership(:, k) + w(2)*overall_agency(:, k) + w(3)*overall_tactile(:, k)) / (sum(w));
+end
+ 
+%% Plot the embodiment
+close all
+my_boxchart = my_boxplot(embodiment(:, 1), ...
+    embodiment(:, 2), ...
+    embodiment(:, 3), ...
+    embodiment(:, 4), ...
+    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [-2, 2], "Embodiment Perception");
+
+%%
+[h,p,ci,stats]= ttest(embodiment(:, 1),  embodiment(:, 4))
+%%
+clc
+
+if p<0.05 && p>0.01
+        disp("*")
+elseif p<0.01 && p>0.001
+        disp("**")
+elseif p<0.001
+        disp("***")
+end

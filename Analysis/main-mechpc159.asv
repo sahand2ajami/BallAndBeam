@@ -5,13 +5,14 @@ format compact
 %% Convert .csv files to .mat format
 
 start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
-num_participants = 19;
+num_participants = 19-3;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
 % n_phase = 4; % this is the number of experiment phases that the participants had
 
 % This is where each participants' data are stored for this project
-cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main')
+data_path = "D:\OneDrive - University of Waterloo\project_BallandBeam\data\project-BallandBeam-data\main_\kinematics";
+cd (data_path)
 
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
@@ -21,7 +22,7 @@ folderName = csv2mat(start, stop);
 %%
 % folderName_phase = dir('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot\02 - Sahand')
 %% Take all .mat files and integrate them in a structure file SubjectData
-cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main')
+cd (data_path)
 SubjectData = struct();
 SubjectData = mat2struct(SubjectData, start, stop);
 
@@ -181,44 +182,44 @@ for i = 1:size(participants_list, 1)
                 Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
 
                 
-                % Include EMG signals here 
-                if k > 1
-                    trials = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k});
-                    exists = isfield(trials, 'emg_raw');
-                    if exists
-                        emg_table_raw = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).emg_raw;
-                        mvc_table_raw = SubjectData.(participants_list{i}).MVC.emg_raw;
-                        
-                        emg_table_preprocessed = table();
-                        emg_table_rms = table();
-                        emg_table_mav = table();
-                        
-                        for kk = 1:width(emg_table_raw)
-                            emg_preprocessed{:, kk} = emg_preprocess(emg_table_raw{:, kk}, mvc_table_raw{:, kk});
-                            emg_name = ['EMG', num2str(kk)];
-                            emg_table_preprocessed.(emg_name) = emg_preprocessed{:, kk};
-                            
-                            [rmsValue{kk}, mavValue{kk}] = emg_metric_calculator(emg_preprocessed{:, kk});
-                            emg_table_rms.(emg_name) = rmsValue{kk};
-                            emg_table_mav.(emg_name) = mavValue{kk};
-                            
-                            rms_mean_array(k-1, kk) = rmsValue{kk};
-                            mav_mean_array(k-1, kk) = mavValue{kk};
-                        end
-                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).pre_processed = emg_table_preprocessed;
-                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).rms = emg_table_rms;
-                        EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).mav = emg_table_mav;
-                    end
-                end
+%                 % Include EMG signals here 
+%                 if k > 1
+%                     trials = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k});
+%                     exists = isfield(trials, 'emg_raw');
+%                     if exists
+%                         emg_table_raw = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).emg_raw;
+%                         mvc_table_raw = SubjectData.(participants_list{i}).MVC.emg_raw;
+%                         
+%                         emg_table_preprocessed = table();
+%                         emg_table_rms = table();
+%                         emg_table_mav = table();
+%                         
+%                         for kk = 1:width(emg_table_raw)
+%                             emg_preprocessed{:, kk} = emg_preprocess(emg_table_raw{:, kk}, mvc_table_raw{:, kk});
+%                             emg_name = ['EMG', num2str(kk)];
+%                             emg_table_preprocessed.(emg_name) = emg_preprocessed{:, kk};
+%                             
+%                             [rmsValue{kk}, mavValue{kk}] = emg_metric_calculator(emg_preprocessed{:, kk});
+%                             emg_table_rms.(emg_name) = rmsValue{kk};
+%                             emg_table_mav.(emg_name) = mavValue{kk};
+%                             
+%                             rms_mean_array(k-1, kk) = rmsValue{kk};
+%                             mav_mean_array(k-1, kk) = mavValue{kk};
+%                         end
+%                         EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).pre_processed = emg_table_preprocessed;
+%                         EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).rms = emg_table_rms;
+%                         EMG_data.(participants_list{i}).(phases_list{j}).(trials_list{k}).mav = emg_table_mav;
+%                     end
+%                 end
             end
 
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.array = rms_mean_array;
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.mean_over_trials = mean(rms_mean_array);
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.std_over_trials = std(rms_mean_array);
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.array = rms_mean_array;
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.mean_over_trials = mean(rms_mean_array);
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.std_over_trials = std(rms_mean_array);
 
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.array = mav_mean_array;
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.mean_over_trials = mean(mav_mean_array);
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.std_over_trials = std(mav_mean_array);
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.array = mav_mean_array;
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.mean_over_trials = mean(mav_mean_array);
+%             Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.std_over_trials = std(mav_mean_array);
 
             
             %%% Save the mean and std of over the trials from each participant

@@ -37,16 +37,11 @@ function SubjectData = mat2struct(SubjectData, start, stop)
                         % load the .mat data into the data structure
                         my_file = load(fileName(j).name);
                         
-                        if ~contains(fileName(j).name, 'scores.mat')
-                            for trialnumber = 1:max(my_file.data.TrialNumber)
-                                SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
-                                    (phase_name).(strcat("trial", num2str(trialnumber))). ...
-                                    (data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
-                            end
-                        else
-                        % Save score data in the SubjectData strucure
+                        for trialnumber = 1:max(my_file.data.TrialNumber)
                             SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
-                                (phase_name).('trial51').(data_name) = max(my_file.data.fail);
+                                (phase_name).(strcat("trial", num2str(trialnumber))). ...
+                                (data_name) = my_file.data(my_file.data.TrialNumber==trialnumber, :);
+                            
                         end
                         %% FOR EMG
 %                         disp(data_name)

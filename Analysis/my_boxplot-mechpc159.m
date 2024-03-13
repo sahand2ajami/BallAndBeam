@@ -79,7 +79,7 @@ my_boxchart.Parent.Units = 'points';
 my_boxchart.Parent.FontSize = font_size; % 9
 my_boxchart.Parent.Title.String = my_title;
 my_boxchart.BoxFaceAlpha = 0;
-
+ylim(y_lim)
 
 
 scatter_boxchart = scatter(x1_jitter, y1);

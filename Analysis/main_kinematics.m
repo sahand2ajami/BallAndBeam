@@ -5,28 +5,29 @@ format compact
 %% Convert .csv files to .mat format
 
 start = 3; %Starting folder from 3, ignoring '.' and '..' in the directory
-num_participants = 19;
+num_participants = 19-3;
 stop = start + (num_participants - 1); %final folder depends on the number of participants
 
 % n_phase = 4; % this is the number of experiment phases that the participants had
-
+data_path = 'D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main_\kinematics';
 % This is where each participants' data are stored for this project
-cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main')
+cd (data_path)
 
 % This function loops in every participant's folder and makes a .mat copy
 % of their .csv data 
 % Input: start and stop numbers for looping the participants' folders
 % UNCOMMENT THIS LINE FOR THE FIRST TIME USING IT
-% folderName = csv2mat(start, stop)
-%%
-% folderName_phase = dir('C:\Users\s2ajami\OneDrive - University of Waterloo\BallAndBeam-project\BallAndBeam\data\pilot\02 - Sahand')
+% folderName = csv2mat(start, stop);
+
 %% Take all .mat files and integrate them in a structure file SubjectData
-cd ('D:\OneDrive - University of Waterloo\BallAndBeam-project\data\project-BallandBeam-data\main')
+cd (data_path)
+% UNCOMMENT THIS LINE FOR THE FIRST TIME USING IT
 SubjectData = struct();
-SubjectData = mat2struct(SubjectData, start, 13);
+SubjectData = mat2struct(SubjectData, start, stop);
 
 % Get the field names
 fieldNames = fieldnames(SubjectData);
+
 % Count the number of which is the number of fields
 n_participants = numel(fieldNames);
 
@@ -43,12 +44,40 @@ Metrics = struct();
 participants_list = fieldnames(SubjectData);
 
 % These need to be checked before the final version of the code. 
-target_boundary = 0.1;
+% target_boundary = 0.03;
+target_boundary = 0.05;
 occluder_boundary = 0.05;
+
+%%
+
+% success_duration = 9;
+% % This extracts the failed trials from the SubjectData
+% for i = 1:size(participants_list, 1)
+%     phases = SubjectData.(participants_list{i});
+%     phases_list = fieldnames(phases);
+%     
+%     % This loops in the phases
+%     for j = 1:size(phases_list, 1)
+%         trials = SubjectData.(participants_list{i}).(phases_list{j});
+%         trials_list = fieldnames(trials);
+% 
+%         % This loops in the trials
+%         for k = 1:size(trials_list, 1)
+%             timedata = trials.(trials_list{k}).time;
+%             duration = timedata.time(end) - timedata.time(1);
+%             if duration < success_duration
+%                 SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}) = NaN
+% %                 SubjectData.(participants_list{i}).(phases_list{j}) = rmfield(SubjectData.(participants_list{i}).(phases_list{j}), trials_list{k})
+%             end
+%         end
+% 
+%     end
+% end
+%%
 
 % variables to calculate mean and std of different metrics.
 
-
+success_duration = 9;
 % This loops in participants
 for i = 1:size(participants_list, 1)
     phases = SubjectData.(participants_list{i});
@@ -56,6 +85,7 @@ for i = 1:size(participants_list, 1)
     
     % This loops in the phases
     for j = 1:size(phases_list, 1)
+
         if contains(phases_list{j}, "MVC")
             mvc_raw = SubjectData.(participants_list{i}).(phases_list{j}).emg_raw;
         end
@@ -68,13 +98,15 @@ for i = 1:size(participants_list, 1)
             rms_mav_array = [];
             % This loops in the trials
             for k = 1:size(trials_list, 1)
-    
+                 
                 % Extract the trajectory of the ball
                 ball_trajectory = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).ball.X;
                 
                 % Extract the time of each trial
                 time_array = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k}).time.time;
                 time_array = time_array - time_array(1);
+                duration = time_array(end);
+                
                 
                 %%% Ball on target overall %%%
                 % Calculate the overall time that the ball stayed on the target
@@ -87,8 +119,13 @@ for i = 1:size(participants_list, 1)
     %             ball_on_target = ball_data((abs(difference) < threshold), :);
     
                 % Extracts the time that the ball was on the target in each
-                % trial
-                ball_on_target_time = ball_on_target_time_extractor(ball_data, target_data, target_boundary);
+                % trial. If it is less than the success_duration, returns
+                % NaN
+                if duration > success_duration
+                    ball_on_target_time = ball_on_target_time_extractor(ball_data, target_data, target_boundary);
+                else
+                    ball_on_target_time = NaN;
+                end
     
                 ball_on_target_time_meanstd_trialwise(k,1) = ball_on_target_time;
                 % Save the over all time trial by trial
@@ -180,7 +217,10 @@ for i = 1:size(participants_list, 1)
                 Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.harmonic.Trials.(trials_list{k}) = harmonic_mean;
                 Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.combined.vector_sum.Trials.(trials_list{k}) = vector_sum;
 
-                
+                % Metric: number of failed trials
+                Metrics.(phases_list{j}).(participants_list{i}).Fail = SubjectData.(participants_list{i}).(phases_list{j}).('trial51').scores;
+
+
                 % Include EMG signals here 
                 if k > 1
                     trials = SubjectData.(participants_list{i}).(phases_list{j}).(trials_list{k});
@@ -212,46 +252,47 @@ for i = 1:size(participants_list, 1)
                 end
             end
 
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.array = rms_mean_array;
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.mean_over_trials = mean(rms_mean_array);
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.std_over_trials = std(rms_mean_array);
-
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.array = mav_mean_array;
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.mean_over_trials = mean(mav_mean_array);
-            Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.std_over_trials = std(mav_mean_array);
-
+            if exists 
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.array = rms_mean_array;
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.mean_over_trials = mean(rms_mean_array);
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.RMS.std_over_trials = std(rms_mean_array);
+            
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.array = mav_mean_array;
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.mean_over_trials = mean(mav_mean_array);
+                Metrics.(phases_list{j}).(participants_list{i}).EMG.MAV.std_over_trials = std(mav_mean_array);
+            end
             
             %%% Save the mean and std of over the trials from each participant
             % The time that ball stays on the target
             Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials = ball_on_target_time_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = mean(ball_on_target_time_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = std(ball_on_target_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.mean = nanmean(ball_on_target_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.std = nanstd(ball_on_target_time_meanstd_trialwise);
     
             % The time that ball stays on the target while behind the occluder
             Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.arrayovertrials = ball_on_target_behind_occluder_time_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean = mean(ball_on_target_behind_occluder_time_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.std = std(ball_on_target_behind_occluder_time_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.median = median(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.mean = nanmean(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.std = nanstd(ball_on_target_behind_occluder_time_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetBehindOccluderTime.median = nanmedian(ball_on_target_behind_occluder_time_meanstd_trialwise);
             
             % jerk metric of the left hand
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.arrayovertrials = jerk_metric_left_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = mean(jerk_metric_left_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = std(jerk_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.mean = nanmean(jerk_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.left.std = nanstd(jerk_metric_left_meanstd_trialwise);
     
             % Jerk metric of the right hand
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.arrayovertrials = jerk_metric_right_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = mean(jerk_metric_right_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = std(jerk_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.mean = nanmean(jerk_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.jerk.right.std = nanstd(jerk_metric_right_meanstd_trialwise);
     
             % Speed metric of the left hand
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.arrayovertrials = speed_metric_left_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = mean(speed_metric_left_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = std(speed_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.mean = nanmean(speed_metric_left_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.left.std = nanstd(speed_metric_left_meanstd_trialwise);
     
             % Speed metric of the right hand
             Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.arrayovertrials = speed_metric_right_meanstd_trialwise;
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = mean(speed_metric_right_meanstd_trialwise);
-            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = std(speed_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.mean = nanmean(speed_metric_right_meanstd_trialwise);
+            Metrics.(phases_list{j}).(participants_list{i}).Smoothness.speed.right.std = nanstd(speed_metric_right_meanstd_trialwise);
     
             % Append the mean of each metric into an array so that they can be
             % used in calculation of the mean across participants
@@ -285,18 +326,21 @@ for i = 1:size(participants_list, 1)
             Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.array = speed_metric_right_mean_participantwise(:, j);
             Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.mean = mean(speed_metric_right_mean_participantwise(:, j));
             Metrics_overparticipants.(phases_list{j}).Smoothness.speed.right.std = std(speed_metric_right_mean_participantwise(:, j));
+
+            Metrics_overparticipants.(phases_list{j}).Failed_trials(i) = Metrics.(phases_list{j}).(participants_list{i}).Fail;
+
+            FailedTrials(i, j) = Metrics.(phases_list{j}).(participants_list{i}).Fail;
         end
     end
-
 end
 
 %% These are the plots to observe the groups trends
 close all
 figure
-my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array, ...
+my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array, ...
+    Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array, ...
     Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array, ...
     Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array, ...
-    Metrics_overparticipants.(phases_list{5}).BallOnTargetTime.array, ...
     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Time of Ball on the Target");
 
 %%
@@ -336,54 +380,64 @@ my_boxchart = my_boxplot(Metrics_overparticipants.(phases_list{2}).BallOnTargetT
 %     55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Smoothness speed (Right) - P2");
 
 %%
-% figure
-% plot(Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials)
-% hold on
-% % plot(Metrics.phase1.S_05.BallOnTargetTime.arrayovertrials)
-% % plot(Metrics.phase3.S_05.BallOnTargetTime.arrayovertrials)
-% % plot(Metrics.phase4.S_05.BallOnTargetTime.arrayovertrials)
-% title("Ball on Target time - P1 - ")
-% % legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
-% 
-% 
+figure
+successTrials = 50 - FailedTrials;
+my_boxchart = my_boxplot(successTrials(:, 1), ...
+    successTrials(:, 2), ...
+    successTrials(:, 3), ...
+    successTrials(:, 4), ...
+    55, 'Linux Libertine G', 9, 'phase 1', 'phase 2', 'phase 3', 'phase 4', [0, 0.5], "Number of Successful Trials");
+
+%%
 close all
 figure
 
-plot(Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array)
+plot(Metrics_overparticipants.(phases_list{1}).BallOnTargetTime.array)
 hold on
+plot(Metrics_overparticipants.(phases_list{2}).BallOnTargetTime.array)
 plot(Metrics_overparticipants.(phases_list{3}).BallOnTargetTime.array)
 plot(Metrics_overparticipants.(phases_list{4}).BallOnTargetTime.array)
-plot(Metrics_overparticipants.(phases_list{5}).BallOnTargetTime.array)
 ylim([0, 11])
 title("Ball on Target time - P2 - ")
 legend("phase1", "phase2", "phase3", "phase4", Location="northoutside")
 %% This is for Chalik's learning curve
 % close all
-window = 15;
+window = 3;
 % 
 
-learning_curve = []
+learning_curve = [];
 for i = 1:size(participants_list, 1)
     phases = SubjectData.(participants_list{i});
     phases_list = fieldnames(phases);
-    
+    phases_list = phases_list(~contains(phases_list, "MVC"));
     % This loops in the phases
     for j = 1:size(phases_list, 1)
-        if ~contains(phases_list{j}, "MVC")
-            learning_curve{i, j-1} = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials;
-        end
+%         if ~contains(phases_list{j}, "MVC")
+            learning_curve{i, j} = Metrics.(phases_list{j}).(participants_list{i}).BallOnTargetTime.arrayovertrials;
+%         end
     end
 end
+
+
 close all
 for j = 1:size(learning_curve, 2)
     for i = 1:size(learning_curve, 1)
         learning_curve_phasebased(i, :) = learning_curve{i, j}'
-        mean_baseline = 
     end
     figure
-    learning_curve_plot(learning_curve_phasebased ./ mean(learning_curve_phasebased(:, 1:10), 1))
-
+    my_title = strcat('phase ', num2str(j));
+%     j
+% plot(nanmedian(learning_curve_phasebased))
+%     mean(learning_curve_phasebased(:, 1:10), 2)
+%     learning_curve_plot(learning_curve_phasebased)
+    
+    learning_curve_plot(learning_curve_phasebased ./ mean(learning_curve_phasebased(:, 1:10), 2), my_title)
+% learning_curve_plot(learning_curve_phasebased)
 end
+%%
+figure
+plot(learning_curve_phasebased(1, :))
+
 % for j = 1:size(learning_curve, 2)
 %     for i = 1:
 %     learning_curve_phasebased(j, :) = learning_curve{i, j}'
@@ -391,7 +445,7 @@ end
 % %         i
 % %     end
 % end
-a = learning_curve(:, 1)
+% a = learning_curve(:, 1)
 % k = 1
 % a = [];
 % for j = 1:size(learning_curve, 2)
