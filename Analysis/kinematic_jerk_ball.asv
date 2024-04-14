@@ -1,0 +1,46 @@
+function msj = kinematic_jerk_ball(x)
+
+    % Ensure that x is a column vector
+    x = x(:);
+    % Original signal and sampling rate
+x = your_signal;  % Replace 'your_signal' with your actual signal
+Fs_orig = your_sampling_rate;  % Replace 'your_sampling_rate' with your actual sampling rate
+
+% Desired sampling rate
+Fs_new = 2000;
+
+% Calculate upsample factor
+P = Fs_new / Fs_orig;
+
+% Resample the signal
+x_upsampled = resample(x, P, 1);
+
+% Now, x_upsampled is the signal resampled at 2000 Hz
+
+    fs = 90;
+    
+    % Calculate the time step based on the sampling frequency
+    dt = 1/fs;
+    dddx = diff(x, 3) / dt^3;
+    duration = length(x)*dt - 3*dt;
+    
+    t = linspace(0,duration,length(dddx));
+%     length(t)
+%     length(x)
+    dddx = smooth(t,dddx,0.1,'rloess');
+%     f = figure;
+%     f.Position(2) = 100;
+%     plot(t, x)
+%     hold on
+%     plot(t, dddx)
+    % Square of the jerk
+    squared_jerk = dddx.^2;
+    
+    % Numerically integrate the squared jerk using the trapezoidal rule
+    integral_squared_jerk = trapz(squared_jerk) * dt;
+    
+    % Calculate the mean squared jerk (MSJ)
+    msj = integral_squared_jerk / (duration * dt);
+end
+
+

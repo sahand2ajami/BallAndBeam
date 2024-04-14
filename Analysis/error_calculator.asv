@@ -1,0 +1,11 @@
+function [abs_error, rms_error, max_abs_error] = error_calculator(desired,current)
+%ERROR_CALCULATOR Summary of this function goes here
+%   Detailed explanation goes here
+    
+    error = desired - current;
+    abs_error = abs(error);
+    max_abs_error = max(abs(error));
+    rms_error = rmse(desired, current);
+    int_error = trapz([1:length(error)], error);
+end
+

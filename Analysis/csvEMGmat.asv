@@ -1,4 +1,4 @@
-function [data, ax]  = csvEMGmat(path, i)
+function data = csvEMGmat(path, i)
     
     data = table();
 
@@ -10,16 +10,13 @@ function [data, ax]  = csvEMGmat(path, i)
         % Extract NAN values
         ax = ax([4:end], :);
     
-        % Identify rows that contain at least one NaN value
-        rowsWithNaN = any(isnan(ax), 2);
-        % Find the index of the first row that contains a NaN
-        firstNaNRowIndex = find(rowsWithNaN, 1);
+        % Find the index of the first occurrence of NaN
+        firstNaNIndex = find(isnan(ax), 1);
         
         % If there is a NaN value, truncate the array from that index onwards
-        if ~isempty(firstNaNRowIndex)
-            ax = ax(1:min(firstNaNRowIndex) - 1, :);
+        if ~isempty(firstNaNIndex)
+            ax = ax(1:firstNaNIndex - 1, :);
         end
-
         if size(ax, 2) == 154
             data = table(ax(:,2), ax(:,12), ax(:,28), ax(:,44), ax(:,60), ax(:,76), ...
             ax(:,92), ax(:,108), ax(:,124), ax(:,140), ...
@@ -33,26 +30,21 @@ function [data, ax]  = csvEMGmat(path, i)
         ax = readmatrix(path);
     
         % Extract NAN values
-        ax = ax([4:end], [3:12]);
-
-%         ax([1:5], :)
-        % Identify rows that contain at least one NaN value
-        rowsWithNaN = any(isnan(ax), 2);
+        ax = ax([4:end], :);
+    
+        % Find the index of the first occurrence of NaN
+        firstNaNIndex = find(isnan(ax), 1)
         
-        % Find the index of the first row that contains a NaN
-        firstNaNRowIndex = find(rowsWithNaN, 1);
-%         firstNaNRowIndex
         % If there is a NaN value, truncate the array from that index onwards
-        if ~isempty(firstNaNRowIndex)
-            ax = ax(1:min(firstNaNRowIndex) - 1, :);
+        if ~isempty(firstNaNIndex)
+            ax = ax(1:firstNaNIndex - 1, :)
         end
 
-
-        data = table(ax(:,1), ax(:,2), ax(:,3), ax(:,4), ax(:,5), ax(:,6), ...
-            ax(:,7), ax(:,8), ax(:,9), ax(:,10), ...
+        data = table(ax(:,3), ax(:,4), ax(:,5), ax(:,6), ax(:,7), ax(:,8), ...
+            ax(:,9), ax(:,10), ax(:,11), ax(:,12), ...
             'VariableNames', {'EMG1', 'EMG2', 'EMG3', 'EMG4', 'EMG5', 'EMG6'...
             ,'EMG7', 'EMG8', 'EMG9', 'EMG10'});
-%         data
+        
 
     end
 

@@ -1,17 +1,22 @@
-function pre_processed_emg = emg_preprocess(raw_emg, raw_MVC, i)
+function pre_processed_emg = emg_preprocess(raw_emg, raw_MVC)
 % EMG_PREPROCESS Summary of this function goes here
 % Detailed explanation goes here
 
 % Extract the zero values from the sensors
-% raw_emg = nonzeros(raw_emg);
-% raw_MVC = nonzeros(raw_MVC);
+raw_emg = nonzeros(raw_emg);
+raw_MVC = nonzeros(raw_MVC);
 
 % Sampling frequency provided by delsys trigno sensors
-if i < 12
-    fs = 2000;
-else
-    fs = 1926;
-end
+fs = 2000;
+
+N = length(raw_emg);
+t = (0:N-1) / fs;
+
+fs_new = 1926;
+
+% New sample points
+t_new = (0:round(N*Fs_new/fs_original)-1) / Fs_new;
+
 
 % Lower and higher band frequencies for filtering
 lower_band_frequency = 20;
@@ -40,18 +45,7 @@ mvc_ma = sqrt(movmean(mvc_r, round((window_length*fs)/1000)));
 max_mvc = abs(max(mvc_ma));
 
 %% Normalize the emg signal
-% length(emg_ma)
-% length(max_mvc)
-
 emg_norm = emg_ma ./ max_mvc;
-
-if i<12
-    N = length(emg_norm);
-    t = (0:N-1) / fs;
-    fs_new = 1926;
-    t_new = (0:round(N*fs_new/fs)-1) / fs_new;
-    emg_norm = interp1(t, emg_norm, t_new, 'linear');
-end
 
 pre_processed_emg = emg_norm;
 

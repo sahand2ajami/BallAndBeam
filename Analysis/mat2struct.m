@@ -18,13 +18,17 @@ function SubjectData = mat2struct(SubjectData, start, stop)
         % This is in participants folder and loops between each phase the
         % term k starts from 3 to ignore the first two elemets '.' and '..'
         n_phase = length(folderName_phase) - 2;
-        for k = start:start+n_phase-1
-            
+        for k = 3:3+n_phase-1
+%             folderName_phase(k).name
             % Go through each phase folder
             cd(folderName_phase(k).name);
             
             % read .mat files only
             fileName = dir('*.mat');
+            EMGFolder = dir("EMG");
+%             EMGFolder
+%             fileName.name
+%             fileName
             % Saves the .mat files into the data structure only if the
             % folder is not empty
             if ~isempty(fileName)
@@ -49,7 +53,7 @@ function SubjectData = mat2struct(SubjectData, start, stop)
                                 (phase_name).('trial51').(data_name) = max(my_file.data.fail);
                         end
                         %% FOR EMG
-%                         disp(data_name)
+
                     elseif contains(data_name, 'EMG')
                         cd('EMG')
                         EmgFileName = dir('*.mat');
@@ -66,7 +70,8 @@ function SubjectData = mat2struct(SubjectData, start, stop)
                     
                         %% For MVC
                     elseif contains(data_name, MVC_string)
-                        MVC_file = load(data_name);
+%                         data_name
+                        MVC_file = load(strcat(data_name, ".mat"));
                         SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
                                     ('MVC').('emg_raw') = MVC_file.data;
                         
@@ -75,7 +80,30 @@ function SubjectData = mat2struct(SubjectData, start, stop)
 
 
                 end
+            else
+                
+                
+                cd("EMG");
+                EmgFileName = dir("*.mat");
+                if ~isempty(EmgFileName)
+                    for jj = 1:length(EmgFileName)
+                        emg_file = load(EmgFileName(jj).name);
+                        
+                        if size(emg_file.data, 1) < 3000
+                            emg_file.data
+                            strcat('S', '_', folderName(i).name(1:2))
+                            folderName_phase(k).name
+                            strcat("trial", num2str(jj))
+                        end
+                        SubjectData.(strcat('S', '_', folderName(i).name(1:2))). ...
+                            (folderName_phase(k).name).(strcat("trial", num2str(jj))) = emg_file.data;
+                    end
+                end
+                cd ..
             end
+
+
+            
     
             % go back to the previous folder
             cd ..

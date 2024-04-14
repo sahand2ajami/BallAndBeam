@@ -1,4 +1,4 @@
-function folderName = csv2mat(start, stop)
+function [folderName, ax] = csv2mat(start, stop)
     phase_string = 'phase';
     MVC_string = 'MVC';
     % with'*.' dir will read folder names only
@@ -6,7 +6,7 @@ function folderName = csv2mat(start, stop)
     
     % i starts fom 3 becasue folderName first two elements are '.' and '..'
     for i = start:stop
-
+% for i=12:12
         % go to the folder
         folderName = dir('*');
         folderName(i).name
@@ -15,8 +15,9 @@ function folderName = csv2mat(start, stop)
         % folderName_phase.name
         n_phase = length(folderName_phase) - 2;
 
-        for k = start:start+n_phase-1
-
+        for k = 3:3+n_phase-1
+            
+%             folderName_phase(k).name
             if contains(folderName_phase(k).name, phase_string)
 %              folderName_phase(k).name
                 cd(folderName_phase(k).name);
@@ -30,7 +31,7 @@ function folderName = csv2mat(start, stop)
                          data = csv22mat(string(fileName(j).name));
                          
                         % (1:end-4) removes the '.csv' from the end of the fileName(4) letting matlab save delsys as a '.mat' file.
-                        save(string(fileName(j).name(1:end-4)), "data");
+                        save(strcat(string(fileName(j).name(1:end-4)), ".mat"), "data");
                     end
                 end
 
@@ -50,11 +51,12 @@ function folderName = csv2mat(start, stop)
                     if ~isempty(fileName)
                         for j = 1:length(fileName)
                             % convert the '.csv' file into a '.mat' file. 
+                            string(fileName(j).name);
+
+                            [data, ax] = csvEMGmat(string(fileName(j).name), i);
                             
-                             data = csvEMGmat(string(fileName(j).name));
-                             
                             % (1:end-4) removes the '.csv' from the end of the fileName(4) letting matlab save delsys as a '.mat' file.
-                            save(string(fileName(j).name(1:end-4)), "data");
+                            save(strcat(string(fileName(j).name(1:end-4)), ".mat"), "data");
                         end
                     end
                     % Go to the previous folder
@@ -66,6 +68,7 @@ function folderName = csv2mat(start, stop)
             % Go to the folder MVC, and convert the .csv file into .mat file    
             elseif contains(folderName_phase(k).name, MVC_string) 
 %                 folderName_phase(k).name
+% disp("MVC----------------")
                 cd(folderName_phase(k).name);
 
                 % with'*.csv' dir will read csv files only
@@ -73,10 +76,11 @@ function folderName = csv2mat(start, stop)
                 if ~isempty(fileName)
                     for j = 1:length(fileName)
                         % convert the '.csv' file into a '.mat' file. 
-                         data = csvEMGmat(string(fileName(j).name));
+                         [data, ax] = csvEMGmat(string(fileName(j).name), i);
+                         
                          
                         % (1:end-4) removes the '.csv' from the end of the fileName(4) letting matlab save delsys as a '.mat' file.
-                        save(string(fileName(j).name(1:end-4)), "data");
+                        save(strcat(string(fileName(j).name(1:end-4)), ".mat"), "data");
                     end
                 end
                 % Go to the previous folder
